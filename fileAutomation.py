@@ -5,7 +5,7 @@ from shutil import move
 
 # CONFIGURATION
 
-SOURCE_DIR = "/Users/azapa/Desktop" 
+SOURCE_DIR = os.path.join(os.path.expanduser("~"), "Desktop") 
 
 DEST_DIR_IMAGES = "/Users/azapa/Desktop/Images"
 DEST_DIR_VIDEOS = "/Users/azapa/Desktop/Images"
