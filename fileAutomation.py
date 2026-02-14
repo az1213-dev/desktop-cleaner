@@ -64,23 +64,38 @@ def get_dest(extension):
 
 def clean_desktop():
     print("Scanning " + SOURCE_DIR)
+    
+    try:
+        with scandir(SOURCE_DIR) as entries:
+            for entry in entries:
+                if entry.is_file():
+                    _, ext = splitext(entry.name)
+                    if not ext: continue
 
-    with scandir(SOURCE_DIR) as entries:
-        for entry in entries:
-            if entry.is_file():
-                _, ext = splitext(entry.name)
-                if not ext: continue
+                    dest_dir = get_dest(ext)
+                    ensure_dir(dest_dir)
 
-                dest_dir = get_dest(ext)
-                ensure_dir(dest_dir)
+                    unique_name = make_unique(dest_dir, entry.name)
+                    dest_path = join(dest_dir, unique_name)
 
-                unique_name = make_unique(dest_dir, entry.name)
-                dest_path = join(dest_dir, unique_name)
+                    print("Moving " + entry.name + "to" + dest_dir)
+                    move(entry.path, dest_path)
 
-                print("Moving " + entry.name + "to" + dest_dir)
-                move(entry.path, dest_path)
+    except Exception as e:
+        print("Error scanning desktop")
+        print("Reason: "+ str(e))
+        return
 
     print("Cleaning complete.")
+
+# TERMINAL MENU
+
+def show_menu():
+    print("Desktop Cleaner")
+    print("---------------")
+    print("1. Clean Desktop")
+    print("2. Exit")
+    print("")
 
 # MAIN FUNCTION AND RUNGUARD
 
