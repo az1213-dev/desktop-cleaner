@@ -1,6 +1,7 @@
 import os 
 from os import scandir
 from os.path import splitext, exists, join
+from shutil import move
 
 # CONFIGURATION
 
@@ -58,3 +59,33 @@ def get_dest(extension):
         return DEST_DIR_DOCS
     
     return DEST_DIR_MISC
+
+# CLEAN DESKTOP FUNCTION
+
+def clean_desktop():
+    print("Scanning " + SOURCE_DIR)
+
+    with scandir(SOURCE_DIR) as entries:
+        for entry in entries:
+            if entry.is_file():
+                _, ext = splitext(entry.name)
+                if not ext: continue
+
+                dest_dir = get_dest(ext)
+                ensure_dir(dest_dir)
+
+                unique_name = make_unique(dest_dir, entry.name)
+                dest_path = join(dest_dir, unique_name)
+
+                print("Moving " + entry.name + "to" + dest_dir)
+                move(entry.path, dest_path)
+
+    print("Cleaning complete.")
+
+# MAIN FUNCTION AND RUNGUARD
+
+def main():
+    clean_desktop()
+
+if __name__ == "__main__":
+    main()
