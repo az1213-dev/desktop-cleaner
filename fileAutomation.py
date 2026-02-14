@@ -130,7 +130,18 @@ def show_menu():
 # MAIN FUNCTION AND RUNGUARD
 
 def main():
-    clean_desktop()
+    while True:
+        show_menu()
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            clean_desktop()
+        elif choice == "2":
+            print("Exiting program.")
+            break
+        else:
+            print("Invalid choice. Try again")
+            print("")
 
 if __name__ == "__main__":
     main()
