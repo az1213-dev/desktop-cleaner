@@ -7,11 +7,11 @@ from shutil import move
 
 SOURCE_DIR = os.path.join(os.path.expanduser("~"), "Desktop") 
 
-DEST_DIR_IMAGES = "/Users/azapa/Desktop/Images"
-DEST_DIR_VIDEOS = "/Users/azapa/Desktop/Images"
-DEST_DIR_AUDIO = "/Users/azapa/Desktop/Audio"
-DEST_DIR_DOCS = "/Users/azapa/Desktop/Documents"
-DEST_DIR_MISC = "/Users/azapa/Desktop/Misc"
+DEST_DIR_IMAGES = os.path.join(SOURCE_DIR, "Images")
+DEST_DIR_VIDEOS = os.path.join(SOURCE_DIR, "Videos")
+DEST_DIR_AUDIO = os.path.join(SOURCE_DIR, "Audio")
+DEST_DIR_DOCS = os.path.join(SOURCE_DIR, "Documents")
+DEST_DIR_MISC = os.path.join(SOURCE_DIR, "Misc")
 
 IMAGE_EXTENSIONS = [
     ".jpg", ".jpeg", ".png", ".gif", ".webp", ".tiff", ".bmp", ".heic"
