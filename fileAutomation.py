@@ -2,6 +2,7 @@ import os
 from os import scandir
 from os.path import splitext, exists, join
 from shutil import move
+from downloads_cleaner import clean_downloads
 
 # CONFIGURATION
 
@@ -136,7 +137,8 @@ def show_menu():
     print("Desktop Cleaner")
     print("---------------")
     print("1. Clean Desktop")
-    print("2. Exit")
+    print("2. Clean Downloads")
+    print("3. Exit")
     print("")
 
 # MAIN FUNCTION AND RUNGUARD
@@ -149,6 +151,8 @@ def main():
         if choice == "1":
             clean_desktop()
         elif choice == "2":
+            clean_downloads()
+        elif choice == "3":
             print("Exiting program.")
             break
         else:
