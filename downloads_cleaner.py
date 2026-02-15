@@ -49,3 +49,22 @@ def clean_downloads():
                 print("Moving " + entry.name + " to " + dest_dir)
                 move(entry.path, dest_path)
                 files_moved += 1
+
+                if dest_dir == DL_IMAGES:
+                    moved_imgs += 1
+                elif dest_dir == DL_VIDEOS:
+                    moved_videos += 1
+                elif dest_dir == DL_AUDIO:
+                    moved_audio += 1
+                elif dest_dir == DL_DOCS:
+                    moved_docs += 1
+                else: 
+                    moved_misc += 1
+
+    print("Cleaning complete.")
+    print("Total files moved: " + str(files_moved))
+    print("Images: " + str(moved_imgs))
+    print("Videos: " + str(moved_videos))
+    print("Audio: " + str(moved_audio))
+    print("Documents: " + str(moved_docs))
+    print("Misc: " + str(moved_misc))
