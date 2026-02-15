@@ -13,6 +13,18 @@ DEST_DIR_AUDIO = os.path.join(SOURCE_DIR, "Audio")
 DEST_DIR_DOCS = os.path.join(SOURCE_DIR, "Documents")
 DEST_DIR_MISC = os.path.join(SOURCE_DIR, "Misc")
 
+# DOWNLOADS CONFIGURATION
+
+DOWNLOADS_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
+
+DL_IMAGES = os.path.join(DOWNLOADS_DIR, "Images")
+DL_VIDEOS = os.path.join(DOWNLOADS_DIR, "Videos")
+DL_AUDIO = os.path.join(DOWNLOADS_DIR, "Audio")
+DL_DOCS = os.path.join(DOWNLOADS_DIR, "Documents")
+DL_MISC = os.path.join(DOWNLOADS_DIR, "Misc")
+
+# EXTENSIONS TO BE SORTED
+
 IMAGE_EXTENSIONS = [
     ".jpg", ".jpeg", ".png", ".gif", ".webp", ".tiff", ".bmp", ".heic"
 ]
