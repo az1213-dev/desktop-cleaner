@@ -5,7 +5,7 @@ from shutil import move
 
 # CONFIGURATION
 
-SOURCE_DIR = os.path.join(os.path.expanduser("~"), "Desktop") 
+SOURCE_DIR = os.path.join(os.path.expanduser("~"), "OneDrive", "Desktop")
 
 DEST_DIR_IMAGES = os.path.join(SOURCE_DIR, "Images")
 DEST_DIR_VIDEOS = os.path.join(SOURCE_DIR, "Videos")
