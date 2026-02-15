@@ -134,11 +134,13 @@ def clean_desktop():
 # TERMINAL MENU
 
 def show_menu():
-    print("File Cleaner")
-    print("---------------")
+    print("File Automation Tool")
+    print("--------------------")
     print("1. Clean Desktop")
     print("2. Clean Downloads")
-    print("3. Exit")
+    print("3. Summary Only (Desktop)")
+    print("4. Summary Only (Downloads)")
+    print("5. Exit")
     print("")
 
 # SUMMARY
@@ -207,6 +209,10 @@ def main():
         elif choice == "2":
             clean_downloads()
         elif choice == "3":
+            summary_count(SOURCE_DIR)
+        elif choice == "4":
+            summary_count(DOWNLOADS_DIR)
+        elif choice == "5":
             print("Exiting program.")
             break
         else:
