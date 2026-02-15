@@ -17,48 +17,57 @@ def clean_downloads():
     moved_audio = 0
     moved_docs = 0
     moved_misc = 0
+    try:
+        with scandir(DOWNLOADS_DIR) as entries: 
+            for entry in entries: 
+                if entry.is_file():
+                    _, ext = splitext(entry.name)
+                    if not ext: 
+                        continue 
 
-    with scandir(DOWNLOADS_DIR) as entries: 
-        for entry in entries: 
-            if entry.is_file():
-                _, ext = splitext(entry.name)
-                if not ext: 
-                    continue 
+                    # Determine category of file
+                    dest_dir = get_dest(ext)
+                    
+                    # Map folders to downloads folders
+                    if dest_dir.endswith("Images"):
+                        dest_dir = DL_IMAGES
+                    elif dest_dir.endswith("Videos"):
+                        dest_dir = DL_VIDEOS
+                    elif dest_dir.endswith("Audio"):
+                        dest_dir = DL_AUDIO
+                    elif dest_dir.endswith("Documents"):
+                        dest_dir = DL_DOCS
+                    else: 
+                        dest_dir = DL_MISC
 
-                # Determine category of file
-                dest_dir = get_dest(ext)
-                
-                # Map folders to downloads folders
-                if dest_dir.endswith("Images"):
-                    dest_dir = DL_IMAGES
-                elif dest_dir.endswith("Videos"):
-                    dest_dir = DL_VIDEOS
-                elif dest_dir.endswith("Audio"):
-                    dest_dir = DL_AUDIO
-                elif dest_dir.endswith("Documents"):
-                    dest_dir = DL_DOCS
-                else: 
-                    dest_dir = DL_MISC
+                    ensure_dir(dest_dir)
 
-                ensure_dir(dest_dir)
+                    unique_name = make_unique(dest_dir,entry.name)
+                    dest_path = join(dest_dir,unique_name)
+                try:
+                    print("Moving " + entry.name + " to " + dest_dir)
+                    move(entry.path, dest_path)
+                    files_moved += 1
 
-                unique_name = make_unique(dest_dir,entry.name)
-                dest_path = join(dest_dir,unique_name)
+                    if dest_dir == DL_IMAGES:
+                        moved_imgs += 1
+                    elif dest_dir == DL_VIDEOS:
+                        moved_videos += 1
+                    elif dest_dir == DL_AUDIO:
+                        moved_audio += 1
+                    elif dest_dir == DL_DOCS:
+                        moved_docs += 1
+                    else: 
+                        moved_misc += 1
 
-                print("Moving " + entry.name + " to " + dest_dir)
-                move(entry.path, dest_path)
-                files_moved += 1
+                except Exception as e:
+                    print("Error moving file: " + entry.name)
+                    print("Reason: " + str(e))
 
-                if dest_dir == DL_IMAGES:
-                    moved_imgs += 1
-                elif dest_dir == DL_VIDEOS:
-                    moved_videos += 1
-                elif dest_dir == DL_AUDIO:
-                    moved_audio += 1
-                elif dest_dir == DL_DOCS:
-                    moved_docs += 1
-                else: 
-                    moved_misc += 1
+    except Exception as e:
+        print("Error scanning downloads.")
+        print("Reason: " + str(e))
+        return 
 
     print("Cleaning complete.")
     print("Total files moved: " + str(files_moved))
