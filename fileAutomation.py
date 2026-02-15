@@ -86,7 +86,7 @@ def clean_desktop():
                     dest_path = join(dest_dir, unique_name)
 
                     try:
-                        print("Moving " + entry.name + "to" + dest_dir)
+                        print("Moving " + entry.name + " to " + dest_dir)
                         move(entry.path, dest_path)
                         files_moved += 1
 
