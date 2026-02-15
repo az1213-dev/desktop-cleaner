@@ -31,9 +31,3 @@ def dry_run():
     print("Dry run complete.")
     print("Total files that would be moved: " + str(found))
     print("")
-
-def main():
-    dry_run()
-
-if __name__ == "__main__": 
-    main()

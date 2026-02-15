@@ -13,7 +13,7 @@ def clean_downloads():
     moved_audio = 0
     moved_docs = 0
     moved_misc = 0
-    
+
     try:
         with scandir(DOWNLOADS_DIR) as entries: 
             for entry in entries: 
@@ -74,11 +74,3 @@ def clean_downloads():
     print("Audio: " + str(moved_audio))
     print("Documents: " + str(moved_docs))
     print("Misc: " + str(moved_misc))
-
-# MAIN AND RUNGUARD
-
-def main():
-    clean_downloads()
-
-if __name__ == "__main__":
-    main()

@@ -2,6 +2,8 @@ from os.path import splitext, exists, join
 from config import * 
 import os
 
+# HELPER FUNCTIONS
+
 def ensure_dir(path):
     if not os.path.isdir(path):
         os.makedirs(path,exist_ok=True) 
