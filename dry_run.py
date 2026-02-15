@@ -1,4 +1,7 @@
-from fileAutomation import SOURCE_DIR, scandir, splitext, get_dest
+from config import SOURCE_DIR
+from os import scandir
+from os.path import splitext
+from helpers import get_dest
 
 def dry_run():
     print("Dry Run: Scanning " + SOURCE_DIR)

@@ -1,12 +1,8 @@
-# IMPORTS
-from fileAutomation import (
-    # Constants
-    DOWNLOADS_DIR,
-    DL_IMAGES, DL_AUDIO, DL_DOCS, DL_MISC, DL_VIDEOS,
-    # Functions
-    scandir, splitext, join, move, 
-    ensure_dir, make_unique, get_dest
-)
+from os import scandir
+from os.path import splitext, join
+from shutil import move 
+from config import *
+from helpers import ensure_dir, make_unique, get_dest
 
 def clean_downloads():
     print("Scanning " + DOWNLOADS_DIR)
@@ -17,6 +13,7 @@ def clean_downloads():
     moved_audio = 0
     moved_docs = 0
     moved_misc = 0
+    
     try:
         with scandir(DOWNLOADS_DIR) as entries: 
             for entry in entries: 
@@ -44,25 +41,26 @@ def clean_downloads():
 
                     unique_name = make_unique(dest_dir,entry.name)
                     dest_path = join(dest_dir,unique_name)
-                try:
-                    print("Moving " + entry.name + " to " + dest_dir)
-                    move(entry.path, dest_path)
-                    files_moved += 1
 
-                    if dest_dir == DL_IMAGES:
-                        moved_imgs += 1
-                    elif dest_dir == DL_VIDEOS:
-                        moved_videos += 1
-                    elif dest_dir == DL_AUDIO:
-                        moved_audio += 1
-                    elif dest_dir == DL_DOCS:
-                        moved_docs += 1
-                    else: 
-                        moved_misc += 1
+                    try:
+                        print("Moving " + entry.name + " to " + dest_dir)
+                        move(entry.path, dest_path)
+                        files_moved += 1
 
-                except Exception as e:
-                    print("Error moving file: " + entry.name)
-                    print("Reason: " + str(e))
+                        if dest_dir == DL_IMAGES:
+                            moved_imgs += 1
+                        elif dest_dir == DL_VIDEOS:
+                            moved_videos += 1
+                        elif dest_dir == DL_AUDIO:
+                            moved_audio += 1
+                        elif dest_dir == DL_DOCS:
+                            moved_docs += 1
+                        else: 
+                            moved_misc += 1
+
+                    except Exception as e:
+                        print("Error moving file: " + entry.name)
+                        print("Reason: " + str(e))
 
     except Exception as e:
         print("Error scanning downloads.")
