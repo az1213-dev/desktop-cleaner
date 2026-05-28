@@ -1,0 +1,38 @@
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# OS-specific junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.old
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.code-workspace
+
+# Python packaging (if added later)
+build/
+dist/
+*.egg-info/
+
+# Local config overrides (if you create them)
+config.local.py
