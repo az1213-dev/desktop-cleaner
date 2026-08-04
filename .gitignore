@@ -29,10 +29,10 @@ Desktop.ini
 .idea/
 *.code-workspace
 
-# Python packaging (if added later)
+# Python packaging
 build/
 dist/
 *.egg-info/
 
-# Local config overrides (if you create them)
+# Local config overrides
 config.local.py
