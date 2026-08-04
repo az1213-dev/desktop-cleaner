@@ -1,4 +1,5 @@
 import os
+import json
 
 HOME = os.path.expanduser("~")
 
@@ -11,17 +12,32 @@ HOME = os.path.expanduser("~")
 DOWNLOADS_DIR = os.path.join(HOME, "Downloads")
 
 # CATEGORY -> EXTENSIONS MAP
-# Add new extensions here and they'll automatically be picked up
-# by get_category() / get_dest() in helpers.py.
+# Loaded from categories.json instead of being hardcoded here.
+# Add new extensions by editing that file, not this one.
 
-CATEGORY_EXTENSIONS = {
-    "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".tiff", ".bmp", ".heic"],
-    "Videos": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv"],
-    "Audio": [".mp3", ".wav", ".aac", ".m4a", ".flac"],
-    "Documents": [".txt", ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"],
-}
+CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
+CATEGORIES_FILE = os.path.join(CONFIG_DIR, "categories.json")
 
-MISC_CATEGORY = "Misc"
+
+def load_categories():
+    try:
+        with open(CATEGORIES_FILE, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print("Error: categories.json not found at " + CATEGORIES_FILE)
+        raise
+    except json.JSONDecodeError as e:
+        print("Error: categories.json is not valid JSON.")
+        print("Reason: " + str(e))
+        raise
+
+    categories = data.get("categories", {})
+    misc_category = data.get("misc_category", "Misc")
+
+    return categories, misc_category
+
+
+CATEGORY_EXTENSIONS, MISC_CATEGORY = load_categories()
 
 # Fixed order used for printing summaries so output is consistent
 CATEGORY_ORDER = list(CATEGORY_EXTENSIONS.keys()) + [MISC_CATEGORY]

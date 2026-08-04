@@ -1,0 +1,40 @@
+{
+    "categories": {
+        "Images": [ 
+            ".jpg", 
+            ".jpeg", 
+            ".png", 
+            ".gif", 
+            ".webp", 
+            ".tiff", 
+            ".bmp", 
+            ".heic"
+        ],
+        "Videos": [
+            ".mp4", 
+            ".mov", 
+            ".avi", 
+            ".mkv", 
+            ".webm", 
+            ".flv"
+        ],
+        "Audio": [
+            ".mp3", 
+            ".wav", 
+            ".aac", 
+            ".m4a", 
+            ".flac"
+        ],
+        "Documents": [
+            ".txt", 
+            ".pdf", 
+            ".doc", 
+            ".docx", 
+            ".ppt", 
+            ".pptx", 
+            ".xls", 
+            ".xlsx"
+        ]
+    },
+    "misc_category": "Misc"
+}
