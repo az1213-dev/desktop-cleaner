@@ -4,6 +4,7 @@ from shutil import move
 
 from config import CATEGORY_ORDER
 from helpers import ensure_dir, make_unique, get_dest, get_category
+from logger import start_log, write_log
 
 
 def process_directory(source_dir, dry_run=False, quiet=False):
@@ -12,7 +13,7 @@ def process_directory(source_dir, dry_run=False, quiet=False):
 
     dry_run=True   -> report what would happen, move nothing.
     quiet=True     -> suppress per-file lines, only print the final summary.
-                       (used for "Summary Only" menu options)
+                    (used for "Summary Only" menu options)
 
     Returns a dict of {category: count}.
     """
@@ -23,6 +24,11 @@ def process_directory(source_dir, dry_run=False, quiet=False):
     print("")
 
     counts = {category: 0 for category in CATEGORY_ORDER}
+
+    log_path = None
+    if not dry_run:
+        log_path = start_log()
+        write_log(log_path, "Target: " + source_dir)
 
     try:
         with scandir(source_dir) as entries:
@@ -52,13 +58,19 @@ def process_directory(source_dir, dry_run=False, quiet=False):
                         print("Moving " + entry.name + " -> " + dest_dir)
                     move(entry.path, dest_path)
                     counts[category] += 1
+                    if log_path:
+                        write_log(log_path, "MOVED: " + entry.path + " -> " + dest_path)
                 except Exception as e:
                     print("Error moving file: " + entry.name)
                     print("Reason: " + str(e))
+                    if log_path:
+                        write_log(log_path, "ERROR: " + entry.name + " | " + str(e))
 
     except Exception as e:
         print("Error scanning " + source_dir)
         print("Reason: " + str(e))
+        if log_path:
+            write_log(log_path, "ERROR scanning " + source_dir + " | " + str(e))
         return counts
 
     print("")
@@ -74,6 +86,13 @@ def process_directory(source_dir, dry_run=False, quiet=False):
     for category in CATEGORY_ORDER:
         print(category + ": " + str(counts[category]))
     print("")
+
+    if log_path:
+        write_log(log_path, "Total files moved: " + str(total))
+        for category in CATEGORY_ORDER:
+            write_log(log_path, category + ": " + str(counts[category]))
+        print("Log saved to: " + log_path)
+        print("")
 
     return counts
 

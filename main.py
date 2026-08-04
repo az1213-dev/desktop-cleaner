@@ -51,13 +51,28 @@ def select_drive():
     return None
 
 
+def confirm(message):
+    answer = input(message + " (y/n): ").strip().lower()
+    return answer == "y"
+
+
 def run_mode(target_dir):
     """Ask which mode to run (clean / dry run / summary) against target_dir."""
     show_mode_menu()
     mode_choice = input("Choose a mode: ")
 
     if mode_choice == "1":
-        process_directory(target_dir)
+        preview = process_directory(target_dir, dry_run=True, quiet=True)
+        total = sum(preview.values())
+
+        if total == 0:
+            print("No files to organize.")
+            return
+
+        if confirm("This will move " + str(total) + " file(s) in " + target_dir + ". Continue?"):
+            process_directory(target_dir)
+        else:
+            print("Cancelled. No files were moved.")
     elif mode_choice == "2":
         process_directory(target_dir, dry_run=True)
     elif mode_choice == "3":
