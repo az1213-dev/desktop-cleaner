@@ -2,36 +2,26 @@ import os
 
 HOME = os.path.expanduser("~")
 
-# DOWNLOADS AND DESKTOP DIRECTORIES
+# SOURCE DIRECTORIES
+# Note: there's no fixed "desktop" source anymore. The drive to organize
+# is chosen interactively at runtime (see helpers.get_available_drives
+# and main.select_drive). DOWNLOADS_DIR stays fixed since it's almost
+# always the same known location.
 
-SOURCE_DIR = os.path.join(HOME, "OneDrive", "Desktop")
 DOWNLOADS_DIR = os.path.join(HOME, "Downloads")
 
-# DESKTOP DIRECTORIES
+# CATEGORY -> EXTENSIONS MAP
+# Add new extensions here and they'll automatically be picked up
+# by get_category() / get_dest() in helpers.py.
 
-DEST_DIR_IMAGES = os.path.join(SOURCE_DIR, "Images")
-DEST_DIR_VIDEOS = os.path.join(SOURCE_DIR, "Videos")
-DEST_DIR_AUDIO = os.path.join(SOURCE_DIR, "Audio")
-DEST_DIR_DOCS = os.path.join(SOURCE_DIR, "Documents")
-DEST_DIR_MISC = os.path.join(SOURCE_DIR, "Misc")
+CATEGORY_EXTENSIONS = {
+    "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".tiff", ".bmp", ".heic"],
+    "Videos": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv"],
+    "Audio": [".mp3", ".wav", ".aac", ".m4a", ".flac"],
+    "Documents": [".txt", ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"],
+}
 
-# DOWNLOADS DIRECTORIES
+MISC_CATEGORY = "Misc"
 
-DL_IMAGES = os.path.join(DOWNLOADS_DIR, "Images")
-DL_VIDEOS = os.path.join(DOWNLOADS_DIR, "Videos")
-DL_AUDIO = os.path.join(DOWNLOADS_DIR, "Audio")
-DL_DOCS = os.path.join(DOWNLOADS_DIR, "Documents")
-DL_MISC = os.path.join(DOWNLOADS_DIR, "Misc")
-
-IMAGE_EXTENSIONS = [    
-    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".tiff", ".bmp", ".heic"
-]
-VIDEO_EXTENSIONS = [
-    ".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv"
-]
-AUDIO_EXTENSIONS = [
-    ".mp3", ".wav", ".aac", ".m4a", ".flac"
-]
-DOC_EXTENSIONS = [
-    ".txt", ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"
-]
+# Fixed order used for printing summaries so output is consistent
+CATEGORY_ORDER = list(CATEGORY_EXTENSIONS.keys()) + [MISC_CATEGORY]
