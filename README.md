@@ -64,13 +64,19 @@ to pick from. Either way, you'll then choose a mode:
 
 ## Categories
 
-| Category  | Extensions                                                        |
-|-----------|--------------------------------------------------------------------|
-| Images    | `.jpg` `.jpeg` `.png` `.gif` `.webp` `.tiff` `.bmp` `.heic`       |
-| Videos    | `.mp4` `.mov` `.avi` `.mkv` `.webm` `.flv`                        |
-| Audio     | `.mp3` `.wav` `.aac` `.m4a` `.flac`                               |
-| Documents | `.txt` `.pdf` `.doc` `.docx` `.ppt` `.pptx` `.xls` `.xlsx`        |
-| Misc      | Anything else                                                     |
+| Category                   | Extensions                                                               |
+|----------------------------|--------------------------------------------------------------------------|
+| Images                     | `.jpg` `.jpeg` `.png` `.webp` `.svg` `.gif` `.heic` `...`               |
+| Videos                     | `.mp4` `.mov` `.avi` `.webm` `.mkv` `...`                                |
+| Audio                      | `.mp3` `.wav` `.aac` `.m4a` `.flac` `.ogg` `...`                        |
+| Documents                  | `.pdf` `.docx` `.xlsx` `.pptx` `.txt` `.md` `.csv` `...`                  |
+| Projects & Creative        | `.psd` `.ai` `.fig` `.blend` `.stl` `.obj` `.gcode` `...`                 |
+| Code & Web                 | `.py` `.js` `.ts` `.jsx` `.tsx` `.html` `.css` `.json` `...`            |
+| Data & Databases           | `.sql` `.db` `.sqlite` `.parquet` `.jsonl` `...`                        |
+| Archives                   | `.zip` `.rar` `.7z` `.tar` `.gz` `...`                                   |
+| Executables & Installers   | `.exe` `.msi` `.dmg` `.app` `.apk` `...`                                 |
+| Fonts                      | `.ttf` `.otf` `.woff` `.woff2` `...`                                     |
+| Misc                       | Anything else                                                            |
 
 New extensions can be added by editing `CATEGORY_EXTENSIONS` in
 `config.py` — no other code changes needed.
