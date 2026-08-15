@@ -1,5 +1,5 @@
 from config import DOWNLOADS_DIR
-from cleaner import process_directory, summary_count
+from cleaner import process_directory, deep_scan_directory
 from helpers import get_available_drives
 
 
@@ -12,11 +12,18 @@ def show_menu():
     print("")
 
 
+def show_scan_type_menu():
+    print("")
+    print("1. Standard (top-level files only)")
+    print("2. Deep Scan (all subfolders, recursively)")
+    print("")
+
+
 def show_mode_menu():
     print("")
     print("1. Clean (move files)")
-    print("2. Dry Run (preview only, no files moved)")
-    print("3. Summary Only (counts only, no files moved)")
+    print("2. Dry Run (preview only, nothing changed)")
+    print("3. Summary Only (counts only, nothing changed)")
     print("4. Back")
     print("")
 
@@ -51,32 +58,47 @@ def select_drive():
     return None
 
 
+def select_scan_type():
+    """Returns True for deep scan, False for standard."""
+    show_scan_type_menu()
+    choice = input("Choose scan type: ")
+    return choice == "2"
+
+
 def confirm(message):
     answer = input(message + " (y/n): ").strip().lower()
     return answer == "y"
 
 
-def run_mode(target_dir):
-    """Ask which mode to run (clean / dry run / summary) against target_dir."""
+def run_mode(target_dir, deep=False):
+    """Ask which mode to run (clean / dry run / summary) against target_dir,
+    using either the standard or deep-scan function depending on `deep`."""
+    scan_func = deep_scan_directory if deep else process_directory
+
     show_mode_menu()
     mode_choice = input("Choose a mode: ")
 
     if mode_choice == "1":
-        preview = process_directory(target_dir, dry_run=True, quiet=True)
+        preview = scan_func(target_dir, dry_run=True, quiet=True)
         total = sum(preview.values())
 
         if total == 0:
             print("No files to organize.")
             return
 
-        if confirm("This will move " + str(total) + " file(s) in " + target_dir + ". Continue?"):
-            process_directory(target_dir)
+        message = "This will move " + str(total) + " file(s) in " + target_dir
+        if deep:
+            message += " and remove any subfolders left empty afterward"
+        message += ". Continue?"
+
+        if confirm(message):
+            scan_func(target_dir)
         else:
             print("Cancelled. No files were moved.")
     elif mode_choice == "2":
-        process_directory(target_dir, dry_run=True)
+        scan_func(target_dir, dry_run=True)
     elif mode_choice == "3":
-        summary_count(target_dir)
+        scan_func(target_dir, dry_run=True, quiet=True)
     elif mode_choice == "4":
         return
     else:
@@ -91,9 +113,11 @@ def main():
         if choice == "1":
             drive = select_drive()
             if drive:
-                run_mode(drive)
+                deep = select_scan_type()
+                run_mode(drive, deep=deep)
         elif choice == "2":
-            run_mode(DOWNLOADS_DIR)
+            deep = select_scan_type()
+            run_mode(DOWNLOADS_DIR, deep=deep)
         elif choice == "3":
             print("Exiting program.")
             break
