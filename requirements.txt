@@ -1,0 +1,17 @@
+# ==============================================================================
+# File Organizer - Python Dependencies
+# ==============================================================================
+# Install all: pip install -r requirements.txt
+# Install dev:  pip install -r requirements.txt -r requirements-dev.txt
+
+# --- Core Runtime ---
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.4
+python-dotenv==1.2.3
+watchdog==6.0.0
+starlette==1.6.0
+
+# --- HTTP Client (used in tests) ---
+httpx==0.28.1
+

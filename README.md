@@ -1,96 +1,123 @@
-# file-organizer
+# File Organizer & Automation Suite
 
-A Python automation tool that keeps your files organized by automatically
-sorting them into category folders — Images, Videos, Audio, Documents, and
-Misc.
+A modern, high-performance Python automation tool that keeps your storage clean and organized by sorting files into categorized folders (**Images**, **Videos**, **Audio**, **Documents**, **Code & Web**, **Projects & Creative**, **Data & Databases**, **Archives**, **Executables**, **Fonts**, and **Misc**).
 
-Originally built to clean up a single Desktop folder, it now works on
-**any detected drive** as well as your Downloads folder, and supports a
-dry run / summary mode so you can preview changes before anything moves.
+Includes an interactive **Real-Time Web Dashboard**, **Live Terminal Streaming (WebSockets)**, **Visual Analytics (Chart.js)**, **Background Auto-Organizer ("Watchdog" Daemon)**, **One-Click Undo / Rollback**, and a rich **CLI interface**.
 
-## Features
+---
 
-- **Drive selection** — automatically detects available drives
-  (`C:\`, `T:\`, `S:\`, etc. on Windows; mount points on macOS/Linux) and
-  lets you choose which one to organize.
-- **Downloads cleanup** — sorts your Downloads folder the same way.
-- **Dry run mode** — preview exactly what would move, without touching
-  any files.
-- **Summary mode** — get file counts per category without a full
-  file-by-file listing.
-- **Safe by default** — only sorts files sitting directly in the chosen
-  folder; it does not recurse into subfolders, so nested folders (like
-  `Program Files` or `Windows` on a system drive) are left untouched.
-- **No overwrites** — if a filename already exists at the destination,
-  the tool automatically renames the incoming file (`photo_1.png`,
-  `photo_2.png`, etc.) instead of overwriting anything.
+## 🚀 Key Features
 
-## Project structure
+- **🌐 Real-Time Web Dashboard** — A modern visual control center with live progress bars, dark mode, interactive Chart.js analytics, and move previews.
+- **⚡ Live Activity Streaming** — Real-time event streaming via WebSockets (`[MOVED]`, `[DRY-RUN]`, `[REMOVED_FOLDER]`, `[WATCHDOG]`).
+- **👀 Background Watcher Daemon** — Continuously monitors folders (like Downloads) using `watchdog` and auto-sorts files the moment they arrive.
+- **↺ 1-Click Rollback / Undo** — Audit trail recorded for every operation (`logs/history.json`), allowing instant reversal of any run.
+- **🔍 Dry Run & Diff Preview** — Inspect file lists, categories, and paths in a searchable table before touching any file.
+- **📁 Standard vs. Deep Scan** — Choose between top-level sorting or full recursive tree scanning (with automated removal of empty subfolders).
+- **🛡️ Collision-Safe Renaming** — Never overwrites existing files (`file_1.png`, `file_2.png`, etc.).
+- **⚙️ Dynamic Rule Editor** — Modify extension mappings directly through the Web UI or `categories.json`.
 
-| File          | Purpose                                                        |
-|---------------|------------------------------------------------------------------|
-| `config.py`   | Paths and the extension-to-category mapping                    |
-| `helpers.py`  | Drive detection, directory creation, filename de-duplication   |
-| `cleaner.py`  | Core scan/sort/move logic, shared by clean/dry-run/summary modes |
-| `main.py`     | Interactive terminal menu / entry point                        |
+---
 
-## Usage
+## 📂 Project Structure
 
-Run the tool from the project directory:
+```
+file-organizer/
+├── cleaner.py          # Core scanning, sorting, and event-driven moving engine
+├── config.py           # Paths, category extension mappings, dynamic reloader
+├── helpers.py          # Drive detection, unique naming, byte formatting, path helpers
+├── history.py          # Transaction recorder & 1-click rollback engine
+├── logger.py           # Timestamped log files saved to logs/
+├── main.py             # CLI interactive menu & command-line argument dispatcher
+├── watcher.py          # Background watchdog daemon for live folder monitoring
+├── requirements.txt    # Python dependencies
+├── categories.json     # Extension-to-category mapping definitions
+├── dashboard/
+│   ├── server.py       # FastAPI backend with REST endpoints & WebSocket hub
+│   ├── templates/
+│   │   └── index.html  # Modern Tailwind CSS + Lucide Icons single-page UI
+│   └── static/
+│       └── app.js      # WebSocket controller, Chart.js graphs & UI interactions
+└── tests/
+    ├── test_organizer.py # Unit tests for cleaner, undo, and helpers
+    └── test_api.py       # API and endpoint test suite
+```
+
+---
+
+## 🛠️ Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/az1213-dev/file-organizer.git
+   cd file-organizer
+   ```
+
+2. **Set up a virtual environment and install dependencies:**
+   ```bash
+   python -m venv .venv
+   # Windows:
+   .\.venv\Scripts\pip install -r requirements.txt
+   # macOS/Linux:
+   source .venv/bin/activate && pip install -r requirements.txt
+   ```
+
+---
+
+## 🖥️ Running the Real-Time Web Dashboard
+
+Launch the dashboard with a single command:
+
+```bash
+python main.py --dashboard
+```
+*Or specify a custom port:*
+```bash
+python main.py --dashboard --port 8080
+```
+
+Your default browser will open to `http://localhost:8000`.
+
+### Dashboard Tabs:
+- **Dashboard & Control:** Select quick locations (Downloads, Desktop, Drives), choose Standard vs. Deep Scan, and trigger Dry Runs or Live Organization.
+- **Diff & Preview:** Search and filter files by category before executing changes.
+- **Run History & Undo:** View past runs and rollback any operation.
+- **Auto-Organizer Daemon:** Add and manage background folder watchers.
+- **Categories & Rules:** Visual editor to add, remove, and modify category mappings.
+
+---
+
+## ⌨️ CLI Usage
+
+You can also run the tool directly in your terminal:
 
 ```bash
 python main.py
 ```
 
-You'll be prompted to choose a target:
+### Command-Line Flags:
+```bash
+# Launch Web Dashboard
+python main.py --dashboard
 
+# Run a Dry Run preview on Downloads (standard top-level)
+python main.py --target "C:\Users\Username\Downloads" --dry-run
+
+# Run a Deep Scan Clean on an entire drive
+python main.py --target "D:\" --clean --deep
+
+# Start background monitoring on Downloads
+python main.py --watch "C:\Users\Username\Downloads"
+
+# Undo the most recent run
+python main.py --undo-last
+
+# Undo a specific run ID
+python main.py --undo "2026-08-24_20-35-12_abc123"
 ```
-File Automation Tool
---------------------
-1. Organize a Drive
-2. Organize Downloads
-3. Exit
-```
 
-If you choose **Organize a Drive**, you'll see a list of detected drives
-to pick from. Either way, you'll then choose a mode:
+---
 
-```
-1. Clean (move files)
-2. Dry Run (preview only, no files moved)
-3. Summary Only (counts only, no files moved)
-4. Back
-```
+## 📄 License
 
-## Categories
-
-| Category                   | Extensions                                                               |
-|----------------------------|--------------------------------------------------------------------------|
-| Images                     | `.jpg` `.jpeg` `.png` `.webp` `.svg` `.gif` `.heic` `...`               |
-| Videos                     | `.mp4` `.mov` `.avi` `.webm` `.mkv` `...`                                |
-| Audio                      | `.mp3` `.wav` `.aac` `.m4a` `.flac` `.ogg` `...`                        |
-| Documents                  | `.pdf` `.docx` `.xlsx` `.pptx` `.txt` `.md` `.csv` `...`                  |
-| Projects & Creative        | `.psd` `.ai` `.fig` `.blend` `.stl` `.obj` `.gcode` `...`                 |
-| Code & Web                 | `.py` `.js` `.ts` `.jsx` `.tsx` `.html` `.css` `.json` `...`            |
-| Data & Databases           | `.sql` `.db` `.sqlite` `.parquet` `.jsonl` `...`                        |
-| Archives                   | `.zip` `.rar` `.7z` `.tar` `.gz` `...`                                   |
-| Executables & Installers   | `.exe` `.msi` `.dmg` `.app` `.apk` `...`                                 |
-| Fonts                      | `.ttf` `.otf` `.woff` `.woff2` `...`                                     |
-| Misc                       | Anything else                                                            |
-
-New extensions can be added by editing `CATEGORY_EXTENSIONS` in
-`config.py` — no other code changes needed.
-
-## Requirements
-
-- Python 3.6+
-- No external dependencies (standard library only)
-
-## Notes
-
-- Drive detection on Windows uses `GetLogicalDrives()` via `ctypes`; on
-  macOS/Linux it falls back to `/` plus anything mounted under `/mnt` or
-  `/Volumes`.
-- Running **Clean** mode on a system drive (like `C:\`) will only affect
-  loose files sitting at the root — it won't touch system folders — but
-  it's still a good idea to run **Dry Run** first to see what would move.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

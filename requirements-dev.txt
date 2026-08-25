@@ -1,0 +1,14 @@
+# ==============================================================================
+# File Organizer - Development & Testing Dependencies
+# ==============================================================================
+# Install with: pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+# --- Testing ---
+pytest==9.1.1
+anyio==4.14.2
+
+# --- Security Auditing ---
+pip-audit==2.10.1
+

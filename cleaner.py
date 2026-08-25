@@ -3,9 +3,10 @@ from os import scandir
 from os.path import splitext, join
 from shutil import move
 
-from config import CATEGORY_ORDER
-from helpers import ensure_dir, make_unique, get_dest, get_category
+import config
+from helpers import ensure_dir, make_unique, get_dest, get_category, format_bytes
 from logger import start_log, write_log
+import history
 
 
 def is_category_folder(name):
@@ -13,30 +14,57 @@ def is_category_folder(name):
     (Images, Videos, Audio, Documents, Misc) - anywhere in the tree.
     Deep scan never descends into or removes these, since they're
     assumed to already be organized."""
-    return name in CATEGORY_ORDER
+    return name in config.CATEGORY_ORDER
 
-def process_directory(source_dir, dry_run=False, quiet=False):
+
+def process_directory(source_dir, dry_run=False, quiet=False, event_callback=None):
     """
     Scan source_dir and sort files into category subfolders.
 
-    dry_run=True   -> report what would happen, move nothing.
-    quiet=True     -> suppress per-file lines, only print the final summary.
-                    (used for "Summary Only" menu options)
+    dry_run=True       -> report what would happen, move nothing.
+    quiet=True         -> suppress per-file console lines, only print final summary (Summary Only mode).
+    event_callback     -> callable(event_dict) for real-time streaming (WebSockets/UI).
 
-    Returns a dict of {category: count}.
+    Returns a dict with summary metrics and file details.
     """
     mode = "Dry Run" if dry_run else "Cleaning"
-    print(mode + ": Scanning " + source_dir)
-    if dry_run:
-        print("No files will be moved.")
-    print("")
+    if quiet:
+        mode = "Summary Only"
 
-    counts = {category: 0 for category in CATEGORY_ORDER}
+    if not quiet and event_callback is None:
+        print(mode + ": Scanning " + source_dir)
+        if dry_run:
+            print("No files will be moved.")
+        print("")
+
+    counts = {category: 0 for category in config.CATEGORY_ORDER}
+    sizes = {category: 0 for category in config.CATEGORY_ORDER}
+    files_list = []
 
     log_path = None
+    run_id = None
     if not dry_run:
         log_path = start_log()
         write_log(log_path, "Target: " + source_dir)
+        run_id = history.start_transaction(source_dir, deep=False, mode="clean")
+
+    if event_callback:
+        event_callback({
+            "type": "start",
+            "mode": mode,
+            "target": source_dir,
+            "deep": False,
+            "dry_run": dry_run,
+            "quiet": quiet,
+            "run_id": run_id,
+            "message": mode + ": Scanning " + source_dir
+        })
+        if dry_run and not quiet:
+            event_callback({
+                "type": "log",
+                "text": "No files will be moved.",
+                "color": "text-slate-400"
+            })
 
     try:
         with scandir(source_dir) as entries:
@@ -48,81 +76,207 @@ def process_directory(source_dir, dry_run=False, quiet=False):
                 if not ext:
                     continue
 
+                try:
+                    file_size = entry.stat().st_size
+                except OSError:
+                    file_size = 0
+
                 category = get_category(ext)
                 dest_dir = get_dest(ext, source_dir)
+                dest_file_path = join(dest_dir, entry.name)
+
+                counts[category] += 1
+                sizes[category] += file_size
+
+                file_info = {
+                    "name": entry.name,
+                    "src": entry.path,
+                    "dest_dir": dest_dir,
+                    "dest_path": dest_file_path,
+                    "category": category,
+                    "extension": ext,
+                    "size": file_size,
+                    "size_formatted": format_bytes(file_size),
+                    "status": "pending"
+                }
 
                 if dry_run:
-                    if not quiet:
+                    file_info["status"] = "would_move"
+                    files_list.append(file_info)
+                    if not quiet and event_callback is None:
                         print("Would move " + entry.name + " -> " + dest_dir)
-                    counts[category] += 1
+                    if event_callback:
+                        event_callback({
+                            "type": "file_preview",
+                            "file": file_info,
+                            "counts": counts,
+                            "sizes": sizes
+                        })
+                        if not quiet:
+                            event_callback({
+                                "type": "log",
+                                "text": "Would move " + entry.name + " -> " + dest_dir,
+                                "color": "text-sky-400"
+                            })
                     continue
 
                 ensure_dir(dest_dir)
                 unique_name = make_unique(dest_dir, entry.name)
-                dest_path = join(dest_dir, unique_name)
+                final_dest_path = join(dest_dir, unique_name)
+                file_info["dest_path"] = final_dest_path
+                file_info["unique_name"] = unique_name
 
                 try:
-                    if not quiet:
+                    if not quiet and event_callback is None:
                         print("Moving " + entry.name + " -> " + dest_dir)
-                    move(entry.path, dest_path)
-                    counts[category] += 1
+
+                    if event_callback:
+                        event_callback({
+                            "type": "file_moving",
+                            "file": file_info
+                        })
+
+                    move(entry.path, final_dest_path)
+                    file_info["status"] = "moved"
+                    files_list.append(file_info)
+
                     if log_path:
-                        write_log(log_path, "MOVED: " + entry.path + " -> " + dest_path)
+                        write_log(log_path, "MOVED: " + entry.path + " -> " + final_dest_path)
+                    if run_id:
+                        history.record_move(run_id, entry.path, final_dest_path)
+
+                    if event_callback:
+                        event_callback({
+                            "type": "file_moved",
+                            "file": file_info,
+                            "counts": counts,
+                            "sizes": sizes,
+                            "total_processed": len(files_list)
+                        })
+                        if not quiet:
+                            event_callback({
+                                "type": "log",
+                                "text": "Moving " + entry.name + " -> " + dest_dir,
+                                "color": "text-emerald-400"
+                            })
+
                 except Exception as e:
-                    print("Error moving file: " + entry.name)
-                    print("Reason: " + str(e))
+                    file_info["status"] = "error"
+                    file_info["error"] = str(e)
+                    files_list.append(file_info)
+                    if not quiet and event_callback is None:
+                        print("Error moving file: " + entry.name + " | " + str(e))
                     if log_path:
                         write_log(log_path, "ERROR: " + entry.name + " | " + str(e))
+                    if event_callback:
+                        event_callback({
+                            "type": "error",
+                            "file": file_info,
+                            "error": str(e)
+                        })
+                        event_callback({
+                            "type": "log",
+                            "text": "Error moving file: " + entry.name + " | " + str(e),
+                            "color": "text-rose-400"
+                        })
 
     except Exception as e:
-        print("Error scanning " + source_dir)
-        print("Reason: " + str(e))
+        if not quiet and event_callback is None:
+            print("Error scanning " + source_dir + " | " + str(e))
         if log_path:
             write_log(log_path, "ERROR scanning " + source_dir + " | " + str(e))
-        return counts
+        if event_callback:
+            event_callback({"type": "error", "error": str(e)})
+            event_callback({
+                "type": "log",
+                "text": "Error scanning " + source_dir + " | " + str(e),
+                "color": "text-rose-400 font-bold"
+            })
 
-    print("")
-    if dry_run:
-        total = sum(counts.values())
-        print("Dry run complete.")
-        print("Total files that would be moved: " + str(total))
-    else:
-        total = sum(counts.values())
-        print("Cleaning complete.")
-        print("Total files moved: " + str(total))
+    total = sum(counts.values())
+    total_bytes = sum(sizes.values())
 
-    for category in CATEGORY_ORDER:
-        print(category + ": " + str(counts[category]))
-    print("")
+    if run_id:
+        history.finish_transaction(run_id, counts)
 
-    if log_path:
-        write_log(log_path, "Total files moved: " + str(total))
-        for category in CATEGORY_ORDER:
-            write_log(log_path, category + ": " + str(counts[category]))
-        print("Log saved to: " + log_path)
+    if not quiet and event_callback is None:
         print("")
+        print(mode + " complete.")
+        print("Total files " + ("that would be " if dry_run else "") + "moved: " + str(total))
+        for category in config.CATEGORY_ORDER:
+            print(category + ": " + str(counts[category]))
+        print("")
+        if log_path:
+            print("Log saved to: " + log_path + "\n")
 
-    return counts
+    summary_result = {
+        "success": True,
+        "mode": mode,
+        "dry_run": dry_run,
+        "quiet": quiet,
+        "deep": False,
+        "target": source_dir,
+        "total_files": total,
+        "total_bytes": total_bytes,
+        "total_bytes_formatted": format_bytes(total_bytes),
+        "counts": counts,
+        "sizes": sizes,
+        "sizes_formatted": {cat: format_bytes(sz) for cat, sz in sizes.items()},
+        "files": files_list,
+        "removed_dirs": [],
+        "run_id": run_id,
+        "log_path": log_path
+    }
+
+    if event_callback:
+        # Emit summary lines to Live Feed
+        event_callback({
+            "type": "log",
+            "text": "\n" + mode + " complete.",
+            "color": "text-indigo-300 font-semibold"
+        })
+        event_callback({
+            "type": "log",
+            "text": "Total files " + ("that would be " if dry_run else "") + "moved: " + str(total),
+            "color": "text-white font-bold"
+        })
+        for category in config.CATEGORY_ORDER:
+            if counts[category] > 0 or not quiet:
+                event_callback({
+                    "type": "log",
+                    "text": category + ": " + str(counts[category]),
+                    "color": "text-slate-300"
+                })
+        if log_path:
+            event_callback({
+                "type": "log",
+                "text": "Log saved to: " + log_path,
+                "color": "text-slate-400"
+            })
+
+        event_callback({
+            "type": "complete",
+            "summary": summary_result
+        })
+
+    return summary_result
 
 
 def summary_count(source_dir):
     """Report-only pass: same scan logic, no files moved, no per-file lines."""
-    return process_directory(source_dir, dry_run=True, quiet=True)
+    res = process_directory(source_dir, dry_run=True, quiet=True)
+    return res["counts"]
 
 
-def cleanup_empty_dirs(source_dir, log_path):
+def cleanup_empty_dirs(source_dir, log_path=None, run_id=None, event_callback=None):
     """
     Walk source_dir bottom-up and remove any subfolder left empty,
-    cascading upward (a parent that becomes empty because its last
-    child was just removed gets removed too). Category folders and
-    source_dir itself are never removed.
-
-    Returns the list of removed folder paths, deepest first.
+    cascading upward. Category folders and source_dir itself are never removed.
     """
     removed = []
 
     for dirpath, dirnames, filenames in os.walk(source_dir, topdown=False):
-        if dirpath == source_dir:
+        if os.path.abspath(dirpath) == os.path.abspath(source_dir):
             continue
 
         name = os.path.basename(dirpath)
@@ -135,9 +289,26 @@ def cleanup_empty_dirs(source_dir, log_path):
                 removed.append(dirpath)
                 if log_path:
                     write_log(log_path, "REMOVED EMPTY FOLDER: " + dirpath)
+                if run_id:
+                    history.record_removed_dir(run_id, dirpath)
+                if event_callback:
+                    event_callback({
+                        "type": "folder_removed",
+                        "path": dirpath
+                    })
+                    event_callback({
+                        "type": "log",
+                        "text": "REMOVED EMPTY FOLDER: " + dirpath,
+                        "color": "text-amber-400"
+                    })
         except Exception as e:
-            print("Error removing folder: " + dirpath)
-            print("Reason: " + str(e))
+            if event_callback:
+                event_callback({"type": "error", "error": "Error removing folder " + dirpath + ": " + str(e)})
+                event_callback({
+                    "type": "log",
+                    "text": "Error removing folder " + dirpath + ": " + str(e),
+                    "color": "text-rose-400"
+                })
 
     return removed
 
@@ -145,17 +316,13 @@ def cleanup_empty_dirs(source_dir, log_path):
 def preview_empty_dirs(source_dir):
     """
     Dry-run equivalent of cleanup_empty_dirs: predicts which folders
-    would end up empty (and therefore removed) once matching files are
-    moved out, without touching the disk. A folder only "would be
-    empty" if every file inside it has an extension (so it would move)
-    and every subfolder inside it would also end up empty. Cascades
-    upward the same way the real cleanup does.
+    would end up empty once matching files are moved out.
     """
     would_remove = []
     removable = set()
 
     for dirpath, dirnames, filenames in os.walk(source_dir, topdown=False):
-        if dirpath == source_dir:
+        if os.path.abspath(dirpath) == os.path.abspath(source_dir):
             continue
 
         name = os.path.basename(dirpath)
@@ -175,38 +342,52 @@ def preview_empty_dirs(source_dir):
     return would_remove
 
 
-def deep_scan_directory(source_dir, dry_run=False, quiet=False):
+def deep_scan_directory(source_dir, dry_run=False, quiet=False, event_callback=None):
     """
     Recursively scan every subfolder of source_dir and sort files into
-    the top-level category folders (Images, Videos, etc.) - however
-    deeply nested they are. Category folders are never descended into,
-    anywhere in the tree, so already-organized files are left alone.
-
-    After moving (real runs only), any subfolder left empty is removed,
-    cascading upward until a non-empty folder is reached.
-
-    dry_run=True   -> report what would happen, move and delete nothing.
-    quiet=True     -> suppress per-file lines, only print the final summary.
-
-    Returns a dict of {category: count}.
+    the top-level category folders.
     """
     mode = "Dry Run (Deep Scan)" if dry_run else "Deep Scan"
-    print(mode + ": Scanning " + source_dir)
-    if dry_run:
-        print("No files will be moved and no folders will be deleted.")
-    print("")
+    if quiet:
+        mode = "Summary Only (Deep Scan)"
 
-    counts = {category: 0 for category in CATEGORY_ORDER}
+    if not quiet and event_callback is None:
+        print(mode + ": Scanning " + source_dir)
+        if dry_run:
+            print("No files will be moved and no folders will be deleted.")
+        print("")
+
+    counts = {category: 0 for category in config.CATEGORY_ORDER}
+    sizes = {category: 0 for category in config.CATEGORY_ORDER}
+    files_list = []
 
     log_path = None
+    run_id = None
     if not dry_run:
         log_path = start_log()
         write_log(log_path, "Target: " + source_dir + " (deep scan)")
+        run_id = history.start_transaction(source_dir, deep=True, mode="clean")
+
+    if event_callback:
+        event_callback({
+            "type": "start",
+            "mode": mode,
+            "target": source_dir,
+            "deep": True,
+            "dry_run": dry_run,
+            "quiet": quiet,
+            "run_id": run_id,
+            "message": mode + ": Scanning " + source_dir
+        })
+        if dry_run and not quiet:
+            event_callback({
+                "type": "log",
+                "text": "No files will be moved and no folders will be deleted.",
+                "color": "text-slate-400"
+            })
 
     try:
         for dirpath, dirnames, filenames in os.walk(source_dir, topdown=True):
-            # Prune category folders from traversal so we never descend
-            # into already-organized files, anywhere in the tree.
             dirnames[:] = [d for d in dirnames if not is_category_folder(d)]
 
             for filename in filenames:
@@ -214,71 +395,209 @@ def deep_scan_directory(source_dir, dry_run=False, quiet=False):
                 if not ext:
                     continue
 
+                src_path = join(dirpath, filename)
+                try:
+                    file_size = os.path.getsize(src_path)
+                except OSError:
+                    file_size = 0
+
                 category = get_category(ext)
                 dest_dir = get_dest(ext, source_dir)
-                src_path = join(dirpath, filename)
+                dest_file_path = join(dest_dir, filename)
+
+                counts[category] += 1
+                sizes[category] += file_size
+
+                file_info = {
+                    "name": filename,
+                    "src": src_path,
+                    "dest_dir": dest_dir,
+                    "dest_path": dest_file_path,
+                    "category": category,
+                    "extension": ext,
+                    "size": file_size,
+                    "size_formatted": format_bytes(file_size),
+                    "status": "pending"
+                }
 
                 if dry_run:
-                    if not quiet:
+                    file_info["status"] = "would_move"
+                    files_list.append(file_info)
+                    if not quiet and event_callback is None:
                         print("Would move " + src_path + " -> " + dest_dir)
-                    counts[category] += 1
+                    if event_callback:
+                        event_callback({
+                            "type": "file_preview",
+                            "file": file_info,
+                            "counts": counts,
+                            "sizes": sizes
+                        })
+                        if not quiet:
+                            event_callback({
+                                "type": "log",
+                                "text": "Would move " + src_path + " -> " + dest_dir,
+                                "color": "text-sky-400"
+                            })
                     continue
 
                 ensure_dir(dest_dir)
                 unique_name = make_unique(dest_dir, filename)
-                dest_path = join(dest_dir, unique_name)
+                final_dest_path = join(dest_dir, unique_name)
+                file_info["dest_path"] = final_dest_path
+                file_info["unique_name"] = unique_name
 
                 try:
-                    if not quiet:
+                    if not quiet and event_callback is None:
                         print("Moving " + src_path + " -> " + dest_dir)
-                    move(src_path, dest_path)
-                    counts[category] += 1
+
+                    if event_callback:
+                        event_callback({
+                            "type": "file_moving",
+                            "file": file_info
+                        })
+
+                    move(src_path, final_dest_path)
+                    file_info["status"] = "moved"
+                    files_list.append(file_info)
+
                     if log_path:
-                        write_log(log_path, "MOVED: " + src_path + " -> " + dest_path)
+                        write_log(log_path, "MOVED: " + src_path + " -> " + final_dest_path)
+                    if run_id:
+                        history.record_move(run_id, src_path, final_dest_path)
+
+                    if event_callback:
+                        event_callback({
+                            "type": "file_moved",
+                            "file": file_info,
+                            "counts": counts,
+                            "sizes": sizes,
+                            "total_processed": len(files_list)
+                        })
+                        if not quiet:
+                            event_callback({
+                                "type": "log",
+                                "text": "Moving " + src_path + " -> " + dest_dir,
+                                "color": "text-emerald-400"
+                            })
+
                 except Exception as e:
-                    print("Error moving file: " + src_path)
-                    print("Reason: " + str(e))
+                    file_info["status"] = "error"
+                    file_info["error"] = str(e)
+                    files_list.append(file_info)
+                    if not quiet and event_callback is None:
+                        print("Error moving file: " + src_path + " | " + str(e))
                     if log_path:
                         write_log(log_path, "ERROR: " + src_path + " | " + str(e))
+                    if event_callback:
+                        event_callback({
+                            "type": "error",
+                            "file": file_info,
+                            "error": str(e)
+                        })
+                        event_callback({
+                            "type": "log",
+                            "text": "Error moving file: " + src_path + " | " + str(e),
+                            "color": "text-rose-400"
+                        })
 
     except Exception as e:
-        print("Error scanning " + source_dir)
-        print("Reason: " + str(e))
+        if not quiet and event_callback is None:
+            print("Error scanning " + source_dir + " | " + str(e))
         if log_path:
             write_log(log_path, "ERROR scanning " + source_dir + " | " + str(e))
-        return counts
+        if event_callback:
+            event_callback({"type": "error", "error": str(e)})
+            event_callback({
+                "type": "log",
+                "text": "Error scanning " + source_dir + " | " + str(e),
+                "color": "text-rose-400 font-bold"
+            })
 
     if dry_run:
         removed_dirs = preview_empty_dirs(source_dir)
     else:
-        removed_dirs = cleanup_empty_dirs(source_dir, log_path)
+        removed_dirs = cleanup_empty_dirs(source_dir, log_path, run_id, event_callback)
 
-    print("")
     total = sum(counts.values())
-    if dry_run:
-        print("Dry run complete.")
-        print("Total files that would be moved: " + str(total))
-    else:
-        print("Deep scan complete.")
-        print("Total files moved: " + str(total))
+    total_bytes = sum(sizes.values())
 
-    for category in CATEGORY_ORDER:
-        print(category + ": " + str(counts[category]))
+    if run_id:
+        history.finish_transaction(run_id, counts)
 
-    if removed_dirs:
-        verb = "would be removed" if dry_run else "removed"
+    if not quiet and event_callback is None:
         print("")
-        print("Empty folders " + verb + ": " + str(len(removed_dirs)))
-        if not quiet:
-            for folder in removed_dirs:
-                print("  " + folder)
-    print("")
-
-    if log_path:
-        write_log(log_path, "Total files moved: " + str(total))
-        for category in CATEGORY_ORDER:
-            write_log(log_path, category + ": " + str(counts[category]))
-        print("Log saved to: " + log_path)
+        print(mode + " complete.")
+        print("Total files " + ("that would be " if dry_run else "") + "moved: " + str(total))
+        for category in config.CATEGORY_ORDER:
+            print(category + ": " + str(counts[category]))
+        if removed_dirs:
+            verb = "would be removed" if dry_run else "removed"
+            print("\nEmpty folders " + verb + ": " + str(len(removed_dirs)))
         print("")
+        if log_path:
+            print("Log saved to: " + log_path + "\n")
 
-    return counts
+    summary_result = {
+        "success": True,
+        "mode": mode,
+        "dry_run": dry_run,
+        "quiet": quiet,
+        "deep": True,
+        "target": source_dir,
+        "total_files": total,
+        "total_bytes": total_bytes,
+        "total_bytes_formatted": format_bytes(total_bytes),
+        "counts": counts,
+        "sizes": sizes,
+        "sizes_formatted": {cat: format_bytes(sz) for cat, sz in sizes.items()},
+        "files": files_list,
+        "removed_dirs": removed_dirs,
+        "run_id": run_id,
+        "log_path": log_path
+    }
+
+    if event_callback:
+        event_callback({
+            "type": "log",
+            "text": "\n" + mode + " complete.",
+            "color": "text-indigo-300 font-semibold"
+        })
+        event_callback({
+            "type": "log",
+            "text": "Total files " + ("that would be " if dry_run else "") + "moved: " + str(total),
+            "color": "text-white font-bold"
+        })
+        for category in config.CATEGORY_ORDER:
+            if counts[category] > 0 or not quiet:
+                event_callback({
+                    "type": "log",
+                    "text": category + ": " + str(counts[category]),
+                    "color": "text-slate-300"
+                })
+        if removed_dirs:
+            verb = "would be removed" if dry_run else "removed"
+            event_callback({
+                "type": "log",
+                "text": "Empty folders " + verb + ": " + str(len(removed_dirs)),
+                "color": "text-amber-300"
+            })
+            if not quiet:
+                for folder in removed_dirs:
+                    event_callback({
+                        "type": "log",
+                        "text": "  " + folder,
+                        "color": "text-slate-400"
+                    })
+        if log_path:
+            event_callback({
+                "type": "log",
+                "text": "Log saved to: " + log_path,
+                "color": "text-slate-400"
+            })
+
+        event_callback({
+            "type": "complete",
+            "summary": summary_result
+        })
+
+    return summary_result
