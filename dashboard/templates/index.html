@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>File Organizer & Automation Dashboard</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -29,12 +28,9 @@
       }
     }
   </script>
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* Custom Scrollbars */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -62,7 +58,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
 
-  <!-- TOP HEADER -->
   <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
     <div class="flex items-center space-x-3">
       <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -77,7 +72,6 @@
       </div>
     </div>
 
-    <!-- Live Status Pill & Watcher Badges -->
     <div class="flex items-center space-x-4">
       <div id="ws-status-badge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
         <span id="ws-indicator" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -91,7 +85,6 @@
     </div>
   </header>
 
-  <!-- NAVIGATION TABS -->
   <nav class="border-b border-slate-800 bg-slate-900/40 px-6">
     <div class="flex space-x-1 overflow-x-auto py-2" id="nav-tabs">
       <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
@@ -118,15 +111,10 @@
     </div>
   </nav>
 
-  <!-- MAIN CONTAINER -->
   <main class="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
 
-    <!-- ============================================== -->
-    <!-- TAB 1: LIVE INTERACTIVE CONSOLE                -->
-    <!-- ============================================== -->
     <div id="tab-content-dashboard" class="space-y-6">
 
-      <!-- QUICK STATS CARDS -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl flex items-center space-x-4">
           <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg">
@@ -169,7 +157,6 @@
         </div>
       </div>
 
-      <!-- INTERACTIVE TERMINAL-STYLE WORKFLOW SELECTOR -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
           <div>
@@ -182,25 +169,21 @@
           <span id="interactive-status-badge" class="px-3 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-medium">STATUS: READY</span>
         </div>
 
-        <!-- STEP 1: TARGET SELECTION -->
         <div class="space-y-3">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">1</span>
             <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Choose Target Directory</label>
           </div>
 
-          <!-- Quick Selector Buttons -->
           <div id="quick-locations-container" class="flex flex-wrap gap-2">
             <div class="animate-pulse bg-slate-800 h-8 w-24 rounded-lg"></div>
           </div>
 
-          <!-- Custom Path Input -->
           <div class="relative pt-1">
             <input type="text" id="target-dir-input" placeholder="e.g. C:\Users\Username\Downloads" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition font-mono">
           </div>
         </div>
 
-        <!-- STEP 2: SCAN STRATEGY -->
         <div class="space-y-3 pt-2">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">2</span>
@@ -230,7 +213,6 @@
           </div>
         </div>
 
-        <!-- STEP 3: MODE EXECUTION -->
         <div class="space-y-3 pt-2">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">3</span>
@@ -238,7 +220,6 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <!-- Mode 1: Clean -->
             <button id="btn-run-clean" onclick="interactiveCleanPrompt()" class="p-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-left transition shadow-lg shadow-emerald-600/20 flex flex-col justify-between group">
               <div class="flex items-center justify-between w-full mb-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-emerald-200">Mode 1</span>
@@ -248,7 +229,6 @@
               <p class="text-xs text-emerald-100/80 mt-1">Previews counts, asks for confirmation, then moves files live.</p>
             </button>
 
-            <!-- Mode 2: Dry Run -->
             <button id="btn-run-dry" onclick="triggerScan(false)" class="p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left transition shadow flex flex-col justify-between group">
               <div class="flex items-center justify-between w-full mb-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Mode 2</span>
@@ -258,7 +238,6 @@
               <p class="text-xs text-slate-400 mt-1">Full file-by-file preview stream. Nothing is changed on disk.</p>
             </button>
 
-            <!-- Mode 3: Summary Only -->
             <button id="btn-run-summary" onclick="triggerScan(true)" class="p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left transition shadow flex flex-col justify-between group">
               <div class="flex items-center justify-between w-full mb-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Mode 3</span>
@@ -270,7 +249,6 @@
           </div>
         </div>
 
-        <!-- Quick Undo Bar -->
         <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
           <span class="text-xs text-slate-400">Made a mistake? You can roll back the previous run instantly.</span>
           <button id="btn-quick-undo" onclick="triggerUndoLast()" class="px-3.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 text-xs font-semibold transition flex items-center space-x-1.5">
@@ -280,7 +258,6 @@
         </div>
       </div>
 
-      <!-- LIVE PROGRESS & METRICS BAR -->
       <div id="live-progress-container" class="hidden bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-5 shadow-2xl space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
@@ -293,21 +270,17 @@
           <span id="live-progress-pct" class="text-sm font-mono font-bold text-indigo-400">0%</span>
         </div>
 
-        <!-- Animated Progress Bar -->
         <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
           <div id="live-progress-bar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-2.5 rounded-full transition-all duration-150" style="width: 0%"></div>
         </div>
 
-        <!-- Live Status Sub-Bar -->
         <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
           <span id="live-processed-count">Processed: 0 files</span>
           <span id="live-current-file" class="truncate max-w-md text-slate-300 font-mono">Scanning...</span>
         </div>
       </div>
 
-      <!-- LIVE FEED & TERMINAL LOG SECTION (LIVE UPDATES) -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl space-y-0">
-        <!-- Terminal Header -->
         <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center space-x-3">
             <div class="flex space-x-1.5">
@@ -321,7 +294,6 @@
             </div>
           </div>
 
-          <!-- Terminal Toolbar -->
           <div class="flex items-center space-x-2 text-xs">
             <button id="btn-autoscroll-toggle" onclick="toggleAutoScroll()" class="px-2.5 py-1 rounded bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/40 transition">
               Auto-Scroll: ON
@@ -335,21 +307,17 @@
           </div>
         </div>
 
-        <!-- Terminal Output Stream -->
         <div id="terminal-log-feed" class="h-80 overflow-y-auto p-4 font-mono text-xs space-y-1 terminal-glow bg-slate-950 text-slate-300 select-text">
           <div class="text-slate-500">[System] Real-time session initialized. Ready for commands.</div>
         </div>
 
-        <!-- Terminal Footer Status Line -->
         <div class="bg-slate-950/90 px-4 py-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
           <span id="terminal-footer-status">Ready. Select a target above and choose Clean, Dry Run, or Summary.</span>
           <span class="text-slate-600">file-organizer v2.0 <span class="cursor-blink">█</span></span>
         </div>
       </div>
 
-      <!-- CHARTS & VISUAL ANALYTICS -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Category Distribution Doughnut -->
         <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold text-white flex items-center space-x-2">
@@ -363,7 +331,6 @@
           </div>
         </div>
 
-        <!-- Storage Breakdown Bar Chart -->
         <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold text-white flex items-center space-x-2">
@@ -380,9 +347,6 @@
 
     </div>
 
-    <!-- ============================================== -->
-    <!-- TAB 2: DIFF & PREVIEW TABLE                    -->
-    <!-- ============================================== -->
     <div id="tab-content-preview" class="hidden space-y-4">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -399,7 +363,6 @@
           </div>
         </div>
 
-        <!-- Files Diff Table -->
         <div class="overflow-x-auto rounded-xl border border-slate-800">
           <table class="w-full text-left text-xs text-slate-300">
             <thead class="bg-slate-950 text-slate-400 uppercase font-mono border-b border-slate-800">
@@ -424,9 +387,6 @@
       </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- TAB 3: RUN HISTORY & UNDO                      -->
-    <!-- ============================================== -->
     <div id="tab-content-history" class="hidden space-y-4">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -446,9 +406,6 @@
       </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- TAB 4: AUTO-ORGANIZER DAEMON (WATCHER)         -->
-    <!-- ============================================== -->
     <div id="tab-content-watcher" class="hidden space-y-6">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6">
         <div class="border-b border-slate-800 pb-4">
@@ -456,7 +413,6 @@
           <p class="text-xs text-slate-400">Monitor folders in real-time. New downloads or dropped files will be sorted automatically.</p>
         </div>
 
-        <!-- Add Watcher Form -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-slate-950 p-4 rounded-xl border border-slate-800">
           <div class="md:col-span-2 space-y-1.5">
             <label class="text-xs font-semibold text-slate-400 uppercase">Folder to Watch</label>
@@ -479,7 +435,6 @@
           </div>
         </div>
 
-        <!-- Active Watchers List -->
         <div class="space-y-3">
           <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Folder Monitors</h3>
           <div id="active-watchers-list" class="space-y-2">
@@ -489,9 +444,6 @@
       </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- TAB 5: CATEGORIES & RULES                      -->
-    <!-- ============================================== -->
     <div id="tab-content-rules" class="hidden space-y-6">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -513,7 +465,6 @@
 
   </main>
 
-  <!-- INTERACTIVE CONFIRMATION MODAL -->
   <div id="confirm-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
       <div class="flex items-center space-x-3 text-amber-400">
@@ -542,10 +493,8 @@
     </div>
   </div>
 
-  <!-- NOTIFICATION TOAST CONTAINER -->
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-  <!-- LOAD APP SCRIPT -->
   <script src="/static/app.js"></script>
   <script>
     lucide.createIcons();
