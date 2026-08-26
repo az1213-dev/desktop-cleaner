@@ -86,3 +86,14 @@ def test_api_scan_and_organize(client, temp_test_dir):
     assert os.path.exists(f1)
     assert os.path.exists(f2)
 
+
+def test_static_logo_and_index(client):
+    index_res = client.get("/")
+    assert index_res.status_code == 200
+    assert "/static/logo.svg" in index_res.text
+
+    logo_res = client.get("/static/logo.svg")
+    assert logo_res.status_code == 200
+    assert "<svg" in logo_res.text
+
+
