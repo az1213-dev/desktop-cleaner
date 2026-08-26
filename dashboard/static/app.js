@@ -272,12 +272,12 @@ function setScanMode(deep) {
   const btnDeep = document.getElementById("btn-mode-deep");
 
   if (deep) {
-    btnDeep.className = "p-3.5 rounded-xl border border-indigo-500/50 bg-indigo-600/20 text-left transition flex items-start space-x-3";
-    btnStandard.className = "p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-left transition flex items-start space-x-3";
+    btnDeep.className = "p-3 rounded-xl border border-indigo-500/50 bg-indigo-600/20 text-left transition flex items-start space-x-3 w-full";
+    btnStandard.className = "p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-left transition flex items-start space-x-3 w-full";
     appendTerminalLog(`[Option Selected] Scan Type: 2. Deep Scan (Recursive subfolders + prune empty folders)`, "text-indigo-300");
   } else {
-    btnStandard.className = "p-3.5 rounded-xl border border-indigo-500/50 bg-indigo-600/20 text-left transition flex items-start space-x-3";
-    btnDeep.className = "p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-left transition flex items-start space-x-3";
+    btnStandard.className = "p-3 rounded-xl border border-indigo-500/50 bg-indigo-600/20 text-left transition flex items-start space-x-3 w-full";
+    btnDeep.className = "p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-left transition flex items-start space-x-3 w-full";
     appendTerminalLog(`[Option Selected] Scan Type: 1. Standard (Top-level files only)`, "text-indigo-300");
   }
 }
