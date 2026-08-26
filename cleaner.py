@@ -44,9 +44,8 @@ def process_directory(source_dir, dry_run=False, quiet=False, event_callback=Non
     log_path = None
     run_id = None
     if not dry_run:
-        log_path = start_log()
-        write_log(log_path, "Target: " + source_dir)
         run_id = history.start_transaction(source_dir, deep=False, mode="clean")
+        log_path = history.get_log_path(run_id)
 
     if event_callback:
         event_callback({
@@ -364,9 +363,8 @@ def deep_scan_directory(source_dir, dry_run=False, quiet=False, event_callback=N
     log_path = None
     run_id = None
     if not dry_run:
-        log_path = start_log()
-        write_log(log_path, "Target: " + source_dir + " (deep scan)")
         run_id = history.start_transaction(source_dir, deep=True, mode="clean")
+        log_path = history.get_log_path(run_id)
 
     if event_callback:
         event_callback({

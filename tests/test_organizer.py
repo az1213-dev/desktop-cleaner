@@ -91,3 +91,40 @@ def test_deep_scan_and_cleanup_empty_dirs(temp_dir):
     # The empty nested directories should be removed
     assert not os.path.exists(nested_sub)
 
+
+def test_log_file_history_and_no_json(temp_dir):
+    test_file = os.path.join(temp_dir, "sample.png")
+    with open(test_file, "w") as f:
+        f.write("image")
+
+    # Run clean
+    res = cleaner.process_directory(temp_dir, dry_run=False)
+    run_id = res["run_id"]
+    log_path = res["log_path"]
+
+    # Verify dedicated log file exists
+    assert os.path.exists(log_path)
+    assert log_path.endswith(".log")
+    with open(log_path, "r", encoding="utf-8") as f:
+        log_content = f.read()
+    assert "MOVED:" in log_content
+    assert "sample.png" in log_content
+
+    # Verify history.json does NOT exist
+    json_path = os.path.join(history.LOG_DIR, "history.json")
+    assert not os.path.exists(json_path)
+
+    # Verify history.get_all_history() reads from .log files
+    all_runs = history.get_all_history()
+    matching = [r for r in all_runs if r["run_id"] == run_id]
+    assert len(matching) == 1
+    assert matching[0]["total_files"] == 1
+
+    # Verify undo updates log file
+    undo_res = history.undo_run(run_id)
+    assert undo_res["success"] is True
+    with open(log_path, "r", encoding="utf-8") as f:
+        updated_log = f.read()
+    assert "UNDONE:" in updated_log
+
+

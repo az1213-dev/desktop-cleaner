@@ -11,7 +11,7 @@ Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets 
 - **🌐 Real-Time Web Dashboard** — A modern visual control center with live progress bars, dark mode, interactive Chart.js analytics, and move previews.
 - **⚡ Live Activity Streaming** — Real-time event streaming via WebSockets (`[MOVED]`, `[DRY-RUN]`, `[REMOVED_FOLDER]`, `[WATCHDOG]`).
 - **👀 Background Watcher Daemon** — Continuously monitors folders (like Downloads) using `watchdog` and auto-sorts files the moment they arrive.
-- **↺ 1-Click Rollback / Undo** — Audit trail recorded for every operation (`logs/history.json`), allowing instant reversal of any run.
+- **↺ 1-Click Rollback / Undo** — Audit trail recorded for every operation as its own dedicated log file (`logs/run_*.log`), mapping out exact before & after file paths for instant reversal.
 - **🔍 Dry Run & Diff Preview** — Inspect file lists, categories, and paths in a searchable table before touching any file.
 - **📁 Standard vs. Deep Scan** — Choose between top-level sorting or full recursive tree scanning (with automated removal of empty subfolders).
 - **🛡️ Collision-Safe Renaming** — Never overwrites existing files (`file_1.png`, `file_2.png`, etc.).
@@ -30,8 +30,8 @@ tideway/
 ├── cleaner.py          # Core scanning, sorting, and event-driven moving engine
 ├── config.py           # Paths, category extension mappings, dynamic reloader
 ├── helpers.py          # Drive detection, unique naming, byte formatting, path helpers
-├── history.py          # Transaction recorder & 1-click rollback engine
-├── logger.py           # Timestamped log files saved to logs/
+├── history.py          # Log-based transaction parser & 1-click rollback engine
+├── logger.py           # Timestamped run log files saved to logs/
 ├── main.py             # CLI interactive menu & command-line argument dispatcher
 ├── watcher.py          # Background watchdog daemon for live folder monitoring
 ├── requirements.txt    # Python dependencies
