@@ -5,10 +5,11 @@ import json
 from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel, field_validator
 
 # Add parent directory to sys.path
@@ -181,7 +182,7 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 
-# UI Route
+# UI Routes & SEO
 @app.get("/", response_class=HTMLResponse)
 async def get_index():
     index_path = os.path.join(TEMPLATES_DIR, "index.html")
@@ -189,6 +190,63 @@ async def get_index():
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
     return "<h1>Dashboard template not found.</h1>"
+
+
+@app.get("/faq", response_class=HTMLResponse)
+async def get_faq():
+    faq_path = os.path.join(TEMPLATES_DIR, "faq.html")
+    if os.path.exists(faq_path):
+        with open(faq_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>FAQ template not found.</h1>"
+
+
+@app.get("/thank-you", response_class=HTMLResponse)
+async def get_thank_you():
+    thank_you_path = os.path.join(TEMPLATES_DIR, "thank_you.html")
+    if os.path.exists(thank_you_path):
+        with open(thank_you_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>Thank you for using Tideway!</h1>"
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def get_robots():
+    content = "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /ws\n"
+    return PlainTextResponse(content=content, media_type="text/plain")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        accept_header = request.headers.get("accept", "")
+        # If API path or JSON requested without HTML
+        if request.url.path.startswith("/api/") or ("application/json" in accept_header and "text/html" not in accept_header):
+            return JSONResponse(status_code=404, content={"detail": exc.detail or "Not Found"})
+
+        template_404 = os.path.join(TEMPLATES_DIR, "404.html")
+        if os.path.exists(template_404):
+            with open(template_404, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=404)
+        return HTMLResponse(content="<h1>404 Not Found</h1>", status_code=404)
+
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
+@app.exception_handler(HTTPException)
+async def fastapi_http_exception_handler(request: Request, exc: HTTPException):
+    if exc.status_code == 404:
+        accept_header = request.headers.get("accept", "")
+        if request.url.path.startswith("/api/") or ("application/json" in accept_header and "text/html" not in accept_header):
+            return JSONResponse(status_code=404, content={"detail": exc.detail or "Not Found"})
+
+        template_404 = os.path.join(TEMPLATES_DIR, "404.html")
+        if os.path.exists(template_404):
+            with open(template_404, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=404)
+        return HTMLResponse(content="<h1>404 Not Found</h1>", status_code=404)
+
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 # REST API Endpoints

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tideway — Thank You</title>
+  <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            slate: {
+              850: '#151c2c',
+              900: '#0f172a',
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .glow-indigo {
+      box-shadow: 0 0 45px -10px rgba(99, 102, 241, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center space-x-3.5">
+      <a href="/" class="flex items-center space-x-3 group" aria-label="Tideway Home">
+        <img src="/static/logo.svg" alt="" width="40" height="40" class="h-10 w-10 rounded-xl shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform duration-200" aria-hidden="true" />
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold tracking-tight text-white group-hover:text-cyan-300 transition-colors">Tideway</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">Real-Time Engine</span>
+          </div>
+          <p class="text-xs text-slate-400">Sweep your files into order</p>
+        </div>
+      </a>
+    </div>
+
+    <nav aria-label="Primary Navigation" class="flex items-center space-x-2">
+      <ul class="flex items-center space-x-2 m-0 p-0 list-none">
+        <li>
+          <a href="/" class="text-xs text-slate-300 hover:text-cyan-400 transition-colors flex items-center space-x-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-800/60">
+            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="/faq" class="text-xs text-slate-300 hover:text-cyan-400 transition-colors flex items-center space-x-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-800/60">
+            <i data-lucide="help-circle" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            <span>FAQ</span>
+          </a>
+        </li>
+        <li>
+          <a href="/thank-you" class="text-xs text-cyan-400 font-semibold flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20" aria-current="page">
+            <i data-lucide="heart" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            <span>Thank You</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" class="flex-1 p-6 max-w-5xl mx-auto w-full flex flex-col justify-center space-y-8 py-10">
+
+    <!-- Hero Appreciation Card -->
+    <article class="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 md:p-12 shadow-2xl text-center space-y-6 glow-indigo relative overflow-hidden" aria-labelledby="thank-you-title">
+      <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+      <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+      <div class="inline-flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 border border-indigo-500/30 rounded-3xl text-cyan-400 shadow-xl">
+        <i data-lucide="award" class="w-12 h-12 text-indigo-400" aria-hidden="true"></i>
+      </div>
+
+      <header class="space-y-3">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">
+          <i data-lucide="heart-handshake" class="w-3.5 h-3.5 text-indigo-400" aria-hidden="true"></i>
+          <span>Thank You for Using Tideway</span>
+        </div>
+        <h1 id="thank-you-title" class="text-3xl md:text-5xl font-extrabold text-white tracking-tight">Your Files, Cleaned &amp; Organized.</h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+          Tideway is built to eliminate clutter and save you time. With real-time folder watchers, collision-safe moves, and instant one-click rollback, your storage stays pristine without the stress.
+        </p>
+      </header>
+
+      <nav aria-label="Dashboard Actions" class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="/" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30">
+          <i data-lucide="arrow-left" class="w-4 h-4" aria-hidden="true"></i>
+          <span>Return to Dashboard</span>
+        </a>
+        <a href="/faq" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition flex items-center justify-center space-x-2 border border-slate-700">
+          <i data-lucide="help-circle" class="w-4 h-4" aria-hidden="true"></i>
+          <span>Browse FAQ</span>
+        </a>
+        <a href="/#tab-preview" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition flex items-center justify-center space-x-2 border border-slate-700">
+          <i data-lucide="file-search" class="w-4 h-4" aria-hidden="true"></i>
+          <span>Preview Changes</span>
+        </a>
+      </nav>
+    </article>
+
+    <!-- Feature Highlights -->
+    <section aria-labelledby="features-heading">
+      <h2 id="features-heading" class="sr-only">Tideway Core Capabilities</h2>
+      <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0 m-0">
+        <li>
+          <article class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition h-full flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl w-fit">
+                <i data-lucide="zap" class="w-6 h-6" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-base font-bold text-white">Live Event Engine</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Watch operations in real time with WebSocket event streaming, interactive dry-run previews, and detailed analytics.
+              </p>
+            </div>
+            <a href="/#tab-dashboard" class="inline-flex items-center space-x-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-semibold pt-2">
+              <span>Explore Console</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            </a>
+          </article>
+        </li>
+
+        <li>
+          <article class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition h-full flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl w-fit">
+                <i data-lucide="rotate-ccw" class="w-6 h-6" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-base font-bold text-white">1-Click Undo &amp; Rollback</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Full transactional audit logs make every move reversible. Restore files back to their exact original locations instantly.
+              </p>
+            </div>
+            <a href="/#tab-history" class="inline-flex items-center space-x-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-semibold pt-2">
+              <span>View Run History</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            </a>
+          </article>
+        </li>
+
+        <li>
+          <article class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition h-full flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl w-fit">
+                <i data-lucide="radar" class="w-6 h-6" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-base font-bold text-white">Continuous Watchers</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Set-and-forget background daemons that monitor folders like Downloads and categorize incoming files instantly.
+              </p>
+            </div>
+            <a href="/#tab-watcher" class="inline-flex items-center space-x-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-semibold pt-2">
+              <span>Configure Watchers</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            </a>
+          </article>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-900/60 px-6 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+      <div class="flex items-center space-x-2">
+        <img src="/static/logo.svg" alt="" width="16" height="16" class="h-4 w-4" aria-hidden="true" />
+        <small class="text-xs">&copy; Tideway — Next-Gen File Organizer</small>
+      </div>
+      <nav aria-label="Footer Links">
+        <ul class="flex items-center space-x-4 list-none m-0 p-0">
+          <li><a href="/" class="hover:text-cyan-400 transition-colors">Dashboard</a></li>
+          <li class="text-slate-700" aria-hidden="true">•</li>
+          <li><a href="/faq" class="hover:text-cyan-400 transition-colors">FAQ</a></li>
+          <li class="text-slate-700" aria-hidden="true">•</li>
+          <li><a href="/thank-you" class="text-cyan-400 font-medium" aria-current="page">Thank You</a></li>
+          <li class="text-slate-700" aria-hidden="true">•</li>
+          <li><a href="/robots.txt" class="hover:text-cyan-400 transition-colors">robots.txt</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

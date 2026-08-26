@@ -97,3 +97,85 @@ def test_static_logo_and_index(client):
     assert "<svg" in logo_res.text
 
 
+def test_faq_page(client):
+    res = client.get("/faq")
+    assert res.status_code == 200
+    assert "text/html" in res.headers.get("content-type", "")
+    assert "Frequently Asked Questions" in res.text
+    assert "<title>Tideway — Frequently Asked Questions</title>" in res.text
+    # Check internal links
+    assert 'href="/"' in res.text
+    assert 'href="/faq"' in res.text
+    assert 'href="/thank-you"' in res.text
+    assert 'href="/robots.txt"' in res.text
+    # Check FAQ content sections
+    assert "What is Tideway" in res.text
+    assert "1-Click Rollback" in res.text
+    assert "collision" in res.text.lower()
+
+
+def test_thank_you_page(client):
+    res = client.get("/thank-you")
+    assert res.status_code == 200
+    assert "text/html" in res.headers.get("content-type", "")
+    assert "Thank You" in res.text
+    assert "<title>Tideway — Thank You</title>" in res.text
+    # Check internal links
+    assert 'href="/"' in res.text
+    assert 'href="/faq"' in res.text
+    assert 'href="/thank-you"' in res.text
+    assert 'href="/robots.txt"' in res.text
+
+
+def test_robots_txt(client):
+    res = client.get("/robots.txt")
+    assert res.status_code == 200
+    assert "text/plain" in res.headers.get("content-type", "")
+    assert "User-agent: *" in res.text
+    assert "Allow: /" in res.text
+    assert "Disallow: /api/" in res.text
+
+
+def test_custom_404_html_page(client):
+    res = client.get("/nonexistent-page-url")
+    assert res.status_code == 404
+    assert "text/html" in res.headers.get("content-type", "")
+    assert "<title>Tideway — 404 Not Found</title>" in res.text
+    assert "Lost at Sea?" in res.text
+    assert 'href="/"' in res.text
+    assert 'href="/faq"' in res.text
+    assert 'href="/thank-you"' in res.text
+    assert 'href="/robots.txt"' in res.text
+
+
+def test_404_json_for_api(client):
+    res = client.get("/api/nonexistent-endpoint")
+    assert res.status_code == 404
+    assert "application/json" in res.headers.get("content-type", "")
+    data = res.json()
+    assert "detail" in data
+
+
+def test_unique_page_titles(client):
+    index_res = client.get("/")
+    faq_res = client.get("/faq")
+    thank_you_res = client.get("/thank-you")
+    not_found_res = client.get("/nonexistent-404")
+
+    assert "<title>Tideway — Real-Time File Organizer &amp; Dashboard</title>" in index_res.text
+    assert "<title>Tideway — Frequently Asked Questions</title>" in faq_res.text
+    assert "<title>Tideway — Thank You</title>" in thank_you_res.text
+    assert "<title>Tideway — 404 Not Found</title>" in not_found_res.text
+
+    # Verify all 4 titles are distinct
+    titles = [
+        "Tideway — Real-Time File Organizer & Dashboard",
+        "Tideway — Frequently Asked Questions",
+        "Tideway — Thank You",
+        "Tideway — 404 Not Found"
+    ]
+    assert len(set(titles)) == 4
+
+
+
+

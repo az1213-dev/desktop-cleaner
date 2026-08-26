@@ -36,6 +36,25 @@ document.addEventListener("DOMContentLoaded", () => {
   loadWatchers();
   loadCategories();
 
+  // Check URL hash for direct tab navigation (e.g. #tab-preview, #tab-history)
+  if (window.location.hash) {
+    const rawHash = window.location.hash.replace("#tab-", "").replace("#", "");
+    const validTabs = ["dashboard", "preview", "history", "watcher", "rules"];
+    if (validTabs.includes(rawHash)) {
+      switchTab(rawHash);
+    }
+  }
+
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash) {
+      const rawHash = window.location.hash.replace("#tab-", "").replace("#", "");
+      const validTabs = ["dashboard", "preview", "history", "watcher", "rules"];
+      if (validTabs.includes(rawHash)) {
+        switchTab(rawHash);
+      }
+    }
+  });
+
   const targetInput = document.getElementById("target-dir-input");
   if (targetInput) {
     targetInput.addEventListener("keydown", (e) => {
