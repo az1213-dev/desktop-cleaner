@@ -3,6 +3,7 @@
 let ws = null;
 let reconnectTimer = null;
 let currentScanModeDeep = false;
+let currentExecutionMode = "clean";
 let currentPreviewFiles = [];
 let autoScrollEnabled = true;
 let confirmResolveCallback = null;
@@ -34,6 +35,16 @@ document.addEventListener("DOMContentLoaded", () => {
   loadHistory();
   loadWatchers();
   loadCategories();
+
+  const targetInput = document.getElementById("target-dir-input");
+  if (targetInput) {
+    targetInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        startOrganize();
+      }
+    });
+  }
 });
 
 // ==========================================
@@ -265,11 +276,12 @@ function setLiveCurrentFile(fileName) {
 // 3. INTERACTIVE TERMINAL-STYLE WORKFLOW
 // ==========================================
 
-// Step 1: Scan Mode
+// Step 2: Scan Mode Selection
 function setScanMode(deep) {
   currentScanModeDeep = deep;
   const btnStandard = document.getElementById("btn-mode-standard");
   const btnDeep = document.getElementById("btn-mode-deep");
+  const hint = document.getElementById("start-summary-hint");
 
   if (deep) {
     btnDeep.className = "p-3 rounded-xl border border-indigo-500/50 bg-indigo-600/20 text-left transition flex items-start space-x-3 w-full";
@@ -279,6 +291,97 @@ function setScanMode(deep) {
     btnStandard.className = "p-3 rounded-xl border border-indigo-500/50 bg-indigo-600/20 text-left transition flex items-start space-x-3 w-full";
     btnDeep.className = "p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-left transition flex items-start space-x-3 w-full";
     appendTerminalLog(`[Option Selected] Scan Type: 1. Standard (Top-level files only)`, "text-indigo-300");
+  }
+
+  const modeLabels = {
+    "clean": "Clean (Move Files)",
+    "dry_run": "Dry Run (Preview Only)",
+    "summary": "Summary Counts Only"
+  };
+  if (hint) {
+    hint.innerText = `Configured: ${deep ? "Deep Scan" : "Standard Scan"} • ${modeLabels[currentExecutionMode] || "Clean"}`;
+  }
+}
+
+// Step 3: Mode Selection Click Handler
+function handleModeClick(mode) {
+  setExecutionMode(mode);
+}
+
+function setExecutionMode(mode) {
+  currentExecutionMode = mode;
+  const btnClean = document.getElementById("btn-mode-clean");
+  const btnDry = document.getElementById("btn-mode-dry");
+  const btnSummary = document.getElementById("btn-mode-summary");
+  const radioClean = document.getElementById("radio-clean");
+  const radioDry = document.getElementById("radio-dry");
+  const radioSummary = document.getElementById("radio-summary");
+  const startBtn = document.getElementById("btn-start-organize");
+  const startLabel = document.getElementById("start-btn-label");
+  const hint = document.getElementById("start-summary-hint");
+
+  // Reset all buttons to inactive styling
+  if (btnClean) btnClean.className = "p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-300 text-left transition flex items-center justify-between group w-full cursor-pointer";
+  if (btnDry) btnDry.className = "p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-300 text-left transition flex items-center justify-between group w-full cursor-pointer";
+  if (btnSummary) btnSummary.className = "p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-300 text-left transition flex items-center justify-between group w-full cursor-pointer";
+
+  // Reset radio dots
+  if (radioClean) {
+    radioClean.className = "w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-transparent flex items-center justify-center shrink-0";
+    radioClean.innerHTML = "";
+  }
+  if (radioDry) {
+    radioDry.className = "w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-transparent flex items-center justify-center shrink-0";
+    radioDry.innerHTML = "";
+  }
+  if (radioSummary) {
+    radioSummary.className = "w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-transparent flex items-center justify-center shrink-0";
+    radioSummary.innerHTML = "";
+  }
+
+  const scanTypeText = currentScanModeDeep ? "Deep Scan" : "Standard Scan";
+
+  if (mode === "clean") {
+    if (btnClean) btnClean.className = "p-2.5 rounded-xl border border-emerald-500/50 bg-emerald-600/20 text-white text-left transition shadow-md shadow-emerald-600/20 flex items-center justify-between group w-full cursor-pointer";
+    if (radioClean) {
+      radioClean.className = "w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-400 flex items-center justify-center shrink-0";
+      radioClean.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-950"></span>`;
+    }
+    if (startBtn) startBtn.className = "w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs tracking-wide transition shadow-lg shadow-emerald-600/25 flex items-center justify-center space-x-2 group cursor-pointer";
+    if (startLabel) startLabel.innerText = "Start Clean (Move Files)";
+    if (hint) hint.innerText = `Configured: ${scanTypeText} • Clean (Move Files)`;
+    appendTerminalLog(`[Option Selected] Execution Mode: 1. Clean (Move Files)`, "text-emerald-300");
+  } else if (mode === "dry_run") {
+    if (btnDry) btnDry.className = "p-2.5 rounded-xl border border-sky-500/50 bg-sky-600/20 text-white text-left transition shadow-md shadow-sky-600/20 flex items-center justify-between group w-full cursor-pointer";
+    if (radioDry) {
+      radioDry.className = "w-3.5 h-3.5 rounded-full border-2 border-sky-400 bg-sky-400 flex items-center justify-center shrink-0";
+      radioDry.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-950"></span>`;
+    }
+    if (startBtn) startBtn.className = "w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs tracking-wide transition shadow-lg shadow-sky-600/25 flex items-center justify-center space-x-2 group cursor-pointer";
+    if (startLabel) startLabel.innerText = "Start Dry Run (Preview)";
+    if (hint) hint.innerText = `Configured: ${scanTypeText} • Dry Run (Preview Only)`;
+    appendTerminalLog(`[Option Selected] Execution Mode: 2. Dry Run (Preview Only)`, "text-sky-300");
+  } else if (mode === "summary") {
+    if (btnSummary) btnSummary.className = "p-2.5 rounded-xl border border-purple-500/50 bg-purple-600/20 text-white text-left transition shadow-md shadow-purple-600/20 flex items-center justify-between group w-full cursor-pointer";
+    if (radioSummary) {
+      radioSummary.className = "w-3.5 h-3.5 rounded-full border-2 border-purple-400 bg-purple-400 flex items-center justify-center shrink-0";
+      radioSummary.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-950"></span>`;
+    }
+    if (startBtn) startBtn.className = "w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs tracking-wide transition shadow-lg shadow-purple-600/25 flex items-center justify-center space-x-2 group cursor-pointer";
+    if (startLabel) startLabel.innerText = "Start Summary Scan";
+    if (hint) hint.innerText = `Configured: ${scanTypeText} • Summary Counts Only`;
+    appendTerminalLog(`[Option Selected] Execution Mode: 3. Summary Only`, "text-purple-300");
+  }
+}
+
+// Dedicated Start Dispatcher
+function startOrganize() {
+  if (currentExecutionMode === "clean") {
+    interactiveCleanPrompt();
+  } else if (currentExecutionMode === "dry_run") {
+    triggerScan(false);
+  } else if (currentExecutionMode === "summary") {
+    triggerScan(true);
   }
 }
 

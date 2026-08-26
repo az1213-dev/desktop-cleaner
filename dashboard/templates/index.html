@@ -230,44 +230,74 @@
                 <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Choose Execution Mode</label>
               </div>
 
-              <p class="text-xs text-slate-400 pt-3">Trigger an immediate preview, summary, or live move:</p>
+              <p class="text-xs text-slate-400 pt-3">Select the execution strategy:</p>
             </div>
 
             <div class="flex flex-col gap-2 flex-1 justify-center py-1">
-              <button id="btn-run-clean" onclick="interactiveCleanPrompt()" class="p-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-left transition shadow-md shadow-emerald-600/20 flex items-center justify-between group w-full">
-                <div>
-                  <div class="flex items-center space-x-1.5">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200">Mode 1</span>
-                    <span class="text-xs font-bold text-white">&bull; Clean</span>
+              <button type="button" id="btn-mode-clean" onclick="handleModeClick('clean')" class="p-2.5 rounded-xl border border-emerald-500/50 bg-emerald-600/20 text-white text-left transition shadow-md shadow-emerald-600/20 flex items-center justify-between group w-full cursor-pointer">
+                <div class="flex items-center space-x-2.5">
+                  <span id="radio-clean" class="w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-400 flex items-center justify-center shrink-0">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-950"></span>
+                  </span>
+                  <div>
+                    <div class="flex items-center space-x-1.5">
+                      <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200">Mode 1</span>
+                      <span class="text-xs font-bold text-white">&bull; Clean</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-100/80 leading-tight">Move files with confirmation</p>
                   </div>
-                  <p class="text-[11px] text-emerald-100/80 leading-tight">Move files with confirmation</p>
                 </div>
                 <i data-lucide="zap" class="w-4 h-4 text-amber-300 group-hover:scale-110 transition shrink-0 ml-2"></i>
               </button>
 
-              <button id="btn-run-dry" onclick="triggerScan(false)" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-left transition flex items-center justify-between group w-full">
-                <div>
-                  <div class="flex items-center space-x-1.5">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode 2</span>
-                    <span class="text-xs font-bold text-white">&bull; Dry Run</span>
+              <button type="button" id="btn-mode-dry" onclick="handleModeClick('dry_run')" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-300 text-left transition flex items-center justify-between group w-full cursor-pointer">
+                <div class="flex items-center space-x-2.5">
+                  <span id="radio-dry" class="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-transparent flex items-center justify-center shrink-0">
+                  </span>
+                  <div>
+                    <div class="flex items-center space-x-1.5">
+                      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode 2</span>
+                      <span class="text-xs font-bold text-white">&bull; Dry Run</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-tight">File-by-file preview stream</p>
                   </div>
-                  <p class="text-[11px] text-slate-400 leading-tight">File-by-file preview stream</p>
                 </div>
                 <i data-lucide="eye" class="w-4 h-4 text-sky-400 group-hover:scale-110 transition shrink-0 ml-2"></i>
               </button>
 
-              <button id="btn-run-summary" onclick="triggerScan(true)" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-left transition flex items-center justify-between group w-full">
-                <div>
-                  <div class="flex items-center space-x-1.5">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode 3</span>
-                    <span class="text-xs font-bold text-white">&bull; Summary Only</span>
+              <button type="button" id="btn-mode-summary" onclick="handleModeClick('summary')" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-300 text-left transition flex items-center justify-between group w-full cursor-pointer">
+                <div class="flex items-center space-x-2.5">
+                  <span id="radio-summary" class="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-transparent flex items-center justify-center shrink-0">
+                  </span>
+                  <div>
+                    <div class="flex items-center space-x-1.5">
+                      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode 3</span>
+                      <span class="text-xs font-bold text-white">&bull; Summary Only</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-tight">Fast category counts</p>
                   </div>
-                  <p class="text-[11px] text-slate-400 leading-tight">Fast category counts</p>
                 </div>
                 <i data-lucide="bar-chart-2" class="w-4 h-4 text-purple-400 group-hover:scale-110 transition shrink-0 ml-2"></i>
               </button>
             </div>
           </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+          <div class="flex items-center space-x-3 text-xs text-slate-300">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <i data-lucide="play-circle" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="font-semibold text-white">Execution Ready</p>
+              <p class="text-slate-400 text-[11px]" id="start-summary-hint">Configured: Standard Scan &bull; Clean (Move Files)</p>
+            </div>
+          </div>
+
+          <button id="btn-start-organize" onclick="startOrganize()" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs tracking-wide transition shadow-lg shadow-emerald-600/25 flex items-center justify-center space-x-2 group">
+            <i data-lucide="play" class="w-4 h-4 fill-white text-white group-hover:scale-110 transition"></i>
+            <span id="start-btn-label">Start Clean (Move Files)</span>
+          </button>
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
@@ -516,7 +546,7 @@
 
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2.2"></script>
   <script>
     lucide.createIcons();
   </script>
