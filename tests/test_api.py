@@ -48,6 +48,34 @@ def test_api_categories(client):
     assert "Images" in data["categories"]
 
 
+def test_api_watchers_start_and_stop(client, temp_test_dir):
+    # Test starting watcher
+    start_res = client.post("/api/watchers/start", json={"target_dir": temp_test_dir, "deep": False})
+    assert start_res.status_code == 200
+    start_data = start_res.json()
+    assert start_data["success"] is True
+    assert len(start_data["watchers"]) >= 1
+
+    # Test list watchers
+    list_res = client.get("/api/watchers")
+    assert list_res.status_code == 200
+    watchers = list_res.json()
+    assert any(os.path.normcase(w["path"]) == os.path.normcase(temp_test_dir) for w in watchers)
+
+    # Test stopping watcher (using path with alternative slashes/casing)
+    alt_path = temp_test_dir.replace("\\", "/")
+    stop_res = client.post("/api/watchers/stop", json={"target_dir": alt_path})
+    assert stop_res.status_code == 200
+    stop_data = stop_res.json()
+    assert stop_data["success"] is True
+    assert not any(os.path.normcase(w["path"]) == os.path.normcase(temp_test_dir) for w in stop_data["watchers"])
+
+    # Test stopping non-existent watcher returns 400 error string
+    stop_again = client.post("/api/watchers/stop", json={"target_dir": temp_test_dir})
+    assert stop_again.status_code == 400
+    assert "Not currently watching" in stop_again.json()["detail"]
+
+
 def test_api_scan_and_organize(client, temp_test_dir):
     # Create test files
     f1 = os.path.join(temp_test_dir, "test1.jpg")
@@ -85,6 +113,29 @@ def test_api_scan_and_organize(client, temp_test_dir):
     assert undo_data["success"] is True
     assert os.path.exists(f1)
     assert os.path.exists(f2)
+
+
+def test_history_api_for_csv_export(client, temp_test_dir):
+    """Verify /api/history returns the expected fields that exportHistoryCSV() depends on."""
+    # Create and organize files so history is populated
+    f1 = os.path.join(temp_test_dir, "export_test.jpg")
+    with open(f1, "w") as f:
+        f.write("img")
+    client.post("/api/organize", json={"target_dir": temp_test_dir, "deep": False})
+
+    res = client.get("/api/history")
+    assert res.status_code == 200
+    data = res.json()
+    assert isinstance(data, list)
+
+    # Validate the schema that the CSV export function relies on
+    if data:
+        run = data[0]
+        for field in ("run_id", "timestamp", "target_dir", "deep", "mode", "total_files", "undone", "moves"):
+            assert field in run, f"Expected field '{field}' missing from /api/history entry"
+        # Validate moves contain src and dest
+        for move in run.get("moves", []):
+            assert "src" in move and "dest" in move
 
 
 def test_static_logo_and_index(client):

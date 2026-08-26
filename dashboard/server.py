@@ -130,6 +130,18 @@ class WatcherRequest(BaseModel):
         return cleaned
 
 
+class WatcherStopRequest(BaseModel):
+    target_dir: str
+
+    @field_validator("target_dir")
+    @classmethod
+    def validate_path(cls, v: str) -> str:
+        cleaned = v.strip()
+        if not cleaned:
+            raise ValueError("Target directory cannot be empty.")
+        return os.path.normpath(cleaned)
+
+
 class CategoriesUpdateRequest(BaseModel):
     categories: Dict[str, List[str]]
     misc_category: Optional[str] = "Misc"
@@ -358,7 +370,7 @@ async def start_watcher(req: WatcherRequest):
 
 
 @app.post("/api/watchers/stop")
-async def stop_watcher(req: WatcherRequest):
+async def stop_watcher(req: WatcherStopRequest):
     success, msg = watcher_manager.stop(req.target_dir)
     if not success:
         raise HTTPException(status_code=400, detail=msg)

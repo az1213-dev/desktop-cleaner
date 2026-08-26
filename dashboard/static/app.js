@@ -26,6 +26,22 @@ let distributionChartInstance = null;
 let storageChartInstance = null;
 let categoriesData = {};
 
+// Helper to extract human-readable error messages from API responses or exceptions
+function extractErrorMessage(errData, fallbackMessage = "An unexpected error occurred") {
+  if (!errData) return fallbackMessage;
+  if (typeof errData === "string") return errData;
+  if (typeof errData.detail === "string") return errData.detail;
+  if (Array.isArray(errData.detail)) {
+    return errData.detail.map(d => (d && d.msg) ? d.msg : (typeof d === "string" ? d : JSON.stringify(d))).join("; ");
+  }
+  if (errData.detail && typeof errData.detail === "object") {
+    return errData.detail.msg || errData.detail.message || JSON.stringify(errData.detail);
+  }
+  if (errData.message && typeof errData.message === "string") return errData.message;
+  if (errData.error && typeof errData.error === "string") return errData.error;
+  return fallbackMessage;
+}
+
 // Initialize on DOM load
 document.addEventListener("DOMContentLoaded", () => {
   initCharts();
@@ -425,7 +441,7 @@ async function interactiveCleanPrompt() {
 
     if (!previewRes.ok) {
       const err = await previewRes.json();
-      throw new Error(err.detail || "Failed to scan folder");
+      throw new Error(extractErrorMessage(err, "Failed to scan folder"));
     }
 
     const previewData = await previewRes.json();
@@ -475,7 +491,7 @@ async function executeRealClean(target, deep) {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.detail || "Organization failed");
+      throw new Error(extractErrorMessage(err, "Organization failed"));
     }
 
     const data = await res.json();
@@ -514,7 +530,7 @@ async function triggerScan(quiet = false) {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.detail || "Scan failed");
+      throw new Error(extractErrorMessage(err, "Scan failed"));
     }
 
     const data = await res.json();
@@ -882,6 +898,126 @@ async function confirmAndUndo(runId, fileCount) {
   }
 }
 
+// Export run history as a downloadable CSV file (client-side, no extra endpoint)
+async function exportHistoryCSV() {
+  const btn = document.getElementById("btn-export-csv");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i data-lucide="loader-circle" class="w-3.5 h-3.5 animate-spin" aria-hidden="true"></i><span>Exporting...</span>`;
+    lucide.createIcons();
+  }
+
+  try {
+    const res = await fetch("/api/history");
+    if (!res.ok) throw new Error("Failed to fetch history: " + res.status);
+    const historyList = await res.json();
+
+    if (!historyList || historyList.length === 0) {
+      showToast("Nothing to Export", "No run history records found.", "info");
+      return;
+    }
+
+    // Build CSV rows: one row per moved file for maximum detail
+    const csvEscape = (val) => {
+      const str = String(val ?? "").replace(/"/g, '""');
+      return /[",\n\r]/.test(str) ? `"${str}"` : str;
+    };
+
+    const headers = [
+      "run_id",
+      "timestamp",
+      "target_dir",
+      "scan_type",
+      "mode",
+      "total_files_in_run",
+      "status",
+      "file_source_path",
+      "file_dest_path",
+      "category"
+    ];
+
+    const rows = [];
+
+    for (const run of historyList) {
+      const scanType = run.deep ? "Deep Scan" : "Standard";
+      const status = run.undone ? "Reverted" : "Complete";
+      const moves = run.moves || [];
+
+      if (moves.length === 0) {
+        // Still emit one summary row even for runs with no recorded move detail
+        rows.push([
+          run.run_id,
+          run.timestamp,
+          run.target_dir,
+          scanType,
+          run.mode,
+          run.total_files,
+          status,
+          "",
+          "",
+          ""
+        ].map(csvEscape).join(","));
+        continue;
+      }
+
+      for (const m of moves) {
+        // Derive category from destination path segment
+        const destParts = (m.dest || "").replace(/\\/g, "/").split("/");
+        // The category folder is typically the segment right after the target base
+        const targetBase = (run.target_dir || "").replace(/\\/g, "/").replace(/\/$/, "");
+        const targetBaseName = targetBase.split("/").pop();
+        let category = "";
+        const targetIdx = destParts.findIndex(p => p === targetBaseName);
+        if (targetIdx >= 0 && destParts[targetIdx + 1]) {
+          category = destParts[targetIdx + 1];
+        }
+
+        rows.push([
+          run.run_id,
+          run.timestamp,
+          run.target_dir,
+          scanType,
+          run.mode,
+          run.total_files,
+          status,
+          m.src || "",
+          m.dest || "",
+          category
+        ].map(csvEscape).join(","));
+      }
+    }
+
+    const csvContent = [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const now = new Date();
+    const stamp = now.getFullYear() + "-" +
+      String(now.getMonth() + 1).padStart(2, "0") + "-" +
+      String(now.getDate()).padStart(2, "0");
+    const filename = `tideway-run-history-${stamp}.csv`;
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast("Export Complete", `Downloaded ${filename} with ${rows.length} file record(s) across ${historyList.length} run(s).`, "success");
+  } catch (e) {
+    console.error("CSV export error:", e);
+    showToast("Export Failed", e.message || "Unexpected error during export.", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i><span>Export CSV</span>`;
+      lucide.createIcons();
+    }
+  }
+}
+
 // ==========================================
 // 9. BACKGROUND WATCHER DAEMON
 // ==========================================
@@ -913,19 +1049,24 @@ async function loadWatchers() {
     }
 
     container.innerHTML = watchers.map(w => `
-      <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <div>
-            <p class="text-xs font-mono font-medium text-white">${escapeHtml(w.path)}</p>
+      <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3">
+        <div class="flex items-center space-x-3 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+          <div class="truncate">
+            <p class="text-xs font-mono font-medium text-white truncate" title="${escapeHtml(w.path)}">${escapeHtml(w.path)}</p>
             <p class="text-xs text-slate-400">Mode: ${w.deep ? 'Recursive' : 'Root only'} &bull; Started: ${w.started_at}</p>
           </div>
         </div>
-        <button onclick="stopWatcher('${escapeHtml(w.path)}')" class="px-3 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition">
-          Stop
+        <button type="button" data-path="${escapeHtml(w.path)}" onclick="stopWatcher(this.dataset.path, this)" class="px-3 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-lg text-xs font-semibold transition shrink-0 flex items-center space-x-1.5">
+          <i data-lucide="square" class="w-3 h-3"></i>
+          <span>Stop</span>
         </button>
       </div>
     `).join("");
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
   } catch (e) {
     console.error("Error loading watchers:", e);
   }
@@ -948,16 +1089,32 @@ async function startWatcherFromInput() {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Failed to start watcher");
+    if (!res.ok) {
+      const errorMsg = extractErrorMessage(data, "Failed to start watcher");
+      throw new Error(errorMsg);
+    }
 
     showToast("Watcher Active", `Now monitoring ${path} in the background.`, "success");
+    appendTerminalLog(`[WATCHER STARTED] Monitoring ${path} (Deep: ${deep})`, "text-emerald-400 font-semibold");
     loadWatchers();
   } catch (e) {
     showToast("Watcher Error", e.message, "error");
+    appendTerminalLog(`[ERROR] Watcher error: ${e.message}`, "text-rose-400");
   }
 }
 
-async function stopWatcher(path) {
+async function stopWatcher(path, btnElement) {
+  if (!path) {
+    showToast("Stop Error", "No target folder provided.", "error");
+    return;
+  }
+
+  if (btnElement) {
+    btnElement.disabled = true;
+    btnElement.innerHTML = `<i data-lucide="loader-circle" class="w-3 h-3 animate-spin"></i><span>Stopping...</span>`;
+    if (window.lucide) lucide.createIcons();
+  }
+
   try {
     const res = await fetch("/api/watchers/stop", {
       method: "POST",
@@ -965,12 +1122,23 @@ async function stopWatcher(path) {
       body: JSON.stringify({ target_dir: path })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Failed to stop watcher");
+    if (!res.ok) {
+      const errorMsg = extractErrorMessage(data, "Failed to stop watcher");
+      throw new Error(errorMsg);
+    }
 
     showToast("Watcher Stopped", `Stopped monitoring ${path}`, "info");
+    appendTerminalLog(`[WATCHER STOPPED] Stopped monitoring ${path}`, "text-slate-400 font-semibold");
     loadWatchers();
   } catch (e) {
     showToast("Stop Error", e.message, "error");
+    appendTerminalLog(`[ERROR] Failed to stop watcher for ${path}: ${e.message}`, "text-rose-400");
+  } finally {
+    if (btnElement) {
+      btnElement.disabled = false;
+      btnElement.innerHTML = `<i data-lucide="square" class="w-3 h-3"></i><span>Stop</span>`;
+      if (window.lucide) lucide.createIcons();
+    }
   }
 }
 
@@ -1027,7 +1195,10 @@ async function saveCategoriesFromUI() {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Failed to save categories");
+    if (!res.ok) {
+      const errorMsg = extractErrorMessage(data, "Failed to save categories");
+      throw new Error(errorMsg);
+    }
 
     showToast("Saved", "Category rules updated successfully.", "success");
     loadCategories();
