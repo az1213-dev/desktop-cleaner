@@ -1,8 +1,8 @@
-# File Organizer & Automation Suite
+# 🌊 Tideway
 
-A modern, high-performance Python automation tool that keeps your storage clean and organized by sorting files into categorized folders (**Images**, **Videos**, **Audio**, **Documents**, **Code & Web**, **Projects & Creative**, **Data & Databases**, **Archives**, **Executables**, **Fonts**, and **Misc**).
+A tidal force for your filesystem — sweep files into organized categories with live previews, auto-watchers, and instant rollback.
 
-Includes an interactive **Real-Time Web Dashboard**, **Live Terminal Streaming (WebSockets)**, **Visual Analytics (Chart.js)**, **Background Auto-Organizer ("Watchdog" Daemon)**, **One-Click Undo / Rollback**, and a rich **CLI interface**.
+Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets + Tailwind CSS), **Background Auto-Organizer Daemon**, **One-Click Undo / Rollback**, and a rich **CLI interface**.
 
 ---
 
@@ -17,12 +17,16 @@ Includes an interactive **Real-Time Web Dashboard**, **Live Terminal Streaming (
 - **🛡️ Collision-Safe Renaming** — Never overwrites existing files (`file_1.png`, `file_2.png`, etc.).
 - **⚙️ Dynamic Rule Editor** — Modify extension mappings directly through the Web UI or `categories.json`.
 
+### Supported Categories
+
+**Images** · **Videos** · **Audio** · **Documents** · **Code & Web** · **Projects & Creative** · **Data & Databases** · **Archives** · **Executables** · **Fonts** · **Misc**
+
 ---
 
 ## 📂 Project Structure
 
 ```
-file-organizer/
+tideway/
 ├── cleaner.py          # Core scanning, sorting, and event-driven moving engine
 ├── config.py           # Paths, category extension mappings, dynamic reloader
 ├── helpers.py          # Drive detection, unique naming, byte formatting, path helpers

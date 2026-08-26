@@ -14,7 +14,8 @@ from watcher import watcher_manager
 
 def show_menu():
     print("========================================")
-    print("      File Organizer & Automation       ")
+    print("             T I D E W A Y              ")
+    print("   Sweep your files into order.         ")
     print("========================================")
     print("1. Organize a Drive")
     print("2. Organize Downloads")
@@ -153,7 +154,7 @@ def show_history_menu():
 
 
 def launch_dashboard(port=8000, open_browser=True):
-    print("\n🚀 Launching File Organizer Web Dashboard on http://localhost:" + str(port) + " ...")
+    print("\n[+] Launching File Organizer Web Dashboard on http://localhost:" + str(port) + " ...")
     
     def open_tab():
         time.sleep(1.2)

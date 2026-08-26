@@ -1,4 +1,4 @@
-// File Organizer - Interactive Dashboard & Real-Time Console Controller
+// Tideway - Interactive Dashboard & Real-Time Console Controller
 
 let ws = null;
 let reconnectTimer = null;
