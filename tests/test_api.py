@@ -210,22 +210,70 @@ def test_404_json_for_api(client):
 def test_unique_page_titles(client):
     index_res = client.get("/")
     faq_res = client.get("/faq")
+    privacy_res = client.get("/privacy")
+    terms_res = client.get("/terms")
     thank_you_res = client.get("/thank-you")
     not_found_res = client.get("/nonexistent-404")
 
     assert "<title>Tideway — Real-Time File Organizer &amp; Dashboard</title>" in index_res.text
     assert "<title>Tideway — Frequently Asked Questions</title>" in faq_res.text
+    assert "<title>Tideway — Privacy Policy</title>" in privacy_res.text
+    assert "<title>Tideway — Terms of Service</title>" in terms_res.text
     assert "<title>Tideway — Thank You</title>" in thank_you_res.text
     assert "<title>Tideway — 404 Not Found</title>" in not_found_res.text
 
-    # Verify all 4 titles are distinct
+    # Verify all 6 titles are distinct
     titles = [
         "Tideway — Real-Time File Organizer & Dashboard",
         "Tideway — Frequently Asked Questions",
+        "Tideway — Privacy Policy",
+        "Tideway — Terms of Service",
         "Tideway — Thank You",
         "Tideway — 404 Not Found"
     ]
-    assert len(set(titles)) == 4
+    assert len(set(titles)) == 6
+
+
+def test_privacy_page(client):
+    res = client.get("/privacy")
+    assert res.status_code == 200
+    assert "text/html" in res.headers.get("content-type", "")
+    assert "Privacy Policy" in res.text
+    assert "cookie-consent-banner" in res.text
+
+
+def test_terms_page(client):
+    res = client.get("/terms")
+    assert res.status_code == 200
+    assert "text/html" in res.headers.get("content-type", "")
+    assert "Terms of Service" in res.text
+    assert "MIT" in res.text
+
+
+def test_sitemap_xml(client):
+    res = client.get("/sitemap.xml")
+    assert res.status_code == 200
+    assert "xml" in res.headers.get("content-type", "")
+    assert "<urlset" in res.text
+    assert "<loc>/faq</loc>" in res.text
+    assert "<loc>/privacy</loc>" in res.text
+
+
+def test_manifest_json(client):
+    res = client.get("/static/manifest.json")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["name"] == "Tideway — Real-Time File Organizer"
+    assert data["display"] == "standalone"
+
+
+def test_security_headers(client):
+    res = client.get("/")
+    assert res.status_code == 200
+    assert res.headers.get("x-content-type-options") == "nosniff"
+    assert res.headers.get("x-frame-options") == "DENY"
+    assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
+    assert "geolocation=()" in res.headers.get("permissions-policy", "")
 
 
 

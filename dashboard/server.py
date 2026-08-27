@@ -5,7 +5,7 @@ import json
 from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,12 +62,24 @@ manager = ConnectionManager()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    config.validate_security_settings()
     manager._loop = asyncio.get_running_loop()
     yield
     watcher_manager.stop_all()
 
 
 app = FastAPI(title="File Organizer Dashboard", lifespan=lifespan)
+
+# Add Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), accelerometer=()"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
 
 # Add CORS security middleware
 if config.ENABLE_CORS:
@@ -222,9 +234,60 @@ async def get_thank_you():
     return "<h1>Thank you for using Tideway!</h1>"
 
 
+@app.get("/privacy", response_class=HTMLResponse)
+async def get_privacy():
+    privacy_path = os.path.join(TEMPLATES_DIR, "privacy.html")
+    if os.path.exists(privacy_path):
+        with open(privacy_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>Privacy Policy template not found.</h1>"
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def get_terms():
+    terms_path = os.path.join(TEMPLATES_DIR, "terms.html")
+    if os.path.exists(terms_path):
+        with open(terms_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>Terms of Service template not found.</h1>"
+
+
+@app.get("/sitemap.xml", response_class=Response)
+async def get_sitemap():
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>/faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>/thank-you</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>"""
+    return Response(content=content, media_type="application/xml")
+
+
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def get_robots():
-    content = "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /ws\n"
+    content = "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /ws\n\nSitemap: /sitemap.xml\n"
     return PlainTextResponse(content=content, media_type="text/plain")
 
 

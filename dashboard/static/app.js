@@ -1269,3 +1269,59 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
+// ==========================================
+// 10. COOKIE & STORAGE CONSENT
+// ==========================================
+function initCookieBanner() {
+  const consent = localStorage.getItem("tideway_cookie_consent");
+  const banner = document.getElementById("cookie-consent-banner");
+  if (!consent && banner) {
+    banner.classList.remove("hidden");
+  }
+}
+
+function setCookieConsent(type) {
+  localStorage.setItem("tideway_cookie_consent", type);
+  const banner = document.getElementById("cookie-consent-banner");
+  if (banner) {
+    banner.classList.add("hidden");
+  }
+}
+
+window.addEventListener("DOMContentLoaded", initCookieBanner);
+
+// ==========================================
+// 11. SMOOTH SCROLLING & TOP NAVIGATION
+// ==========================================
+document.addEventListener("click", (e) => {
+  const link = e.target.closest("a");
+  if (!link) return;
+  const href = link.getAttribute("href");
+
+  // If already on the dashboard page and clicking a home/dashboard link
+  if (href === "/" || href === "#" || href === "/#" || href === "") {
+    if (window.location.pathname === "/" || window.location.pathname === "") {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+      if (window.location.hash) {
+        history.pushState(null, "", "/");
+      }
+    }
+  } else if (href && href.startsWith("/#tab-")) {
+    if (window.location.pathname === "/" || window.location.pathname === "") {
+      const tabName = href.replace("/#tab-", "");
+      if (typeof switchTab === "function") {
+        e.preventDefault();
+        switchTab(tabName);
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      }
+    }
+  }
+});
+

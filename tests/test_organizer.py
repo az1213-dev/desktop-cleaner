@@ -128,3 +128,31 @@ def test_log_file_history_and_no_json(temp_dir):
     assert "UNDONE:" in updated_log
 
 
+def test_validate_security_settings():
+    # In development mode, insecure key should pass
+    config.APP_ENV = "development"
+    config.SECRET_KEY = "default-insecure-secret-key-please-change"
+    config.validate_security_settings()
+
+    # In production mode, insecure or empty key should raise RuntimeError
+    config.APP_ENV = "production"
+    config.SECRET_KEY = "default-insecure-secret-key-please-change"
+    with pytest.raises(RuntimeError) as exc_info:
+        config.validate_security_settings()
+    assert "CRITICAL SECURITY ERROR" in str(exc_info.value)
+
+    # In production mode with a proper 64-char key, it should pass
+    config.SECRET_KEY = "1fb5864fbf871dd4a90650f4101ca33362999e0137c054bcacc864ccdf4ee9f1"
+    config.validate_security_settings()
+
+    # Reset back to development
+    config.APP_ENV = "development"
+
+
+def test_prune_old_logs(temp_dir):
+    from tideway.logger import prune_old_logs, LOG_DIR
+    # Test prune_old_logs does not crash with custom limit
+    prune_old_logs(max_files=100)
+
+
+

@@ -4,7 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tideway — Thank You</title>
+  <meta name="description" content="Thank you for using Tideway — the next-generation real-time file organizer and background folder automation engine.">
+  <meta name="keywords" content="Tideway thank you, file organizer, clean downloads, folder automation">
+  <meta name="author" content="Tideway">
+  <meta name="theme-color" content="#020617">
+  <meta name="color-scheme" content="dark">
+  <link rel="canonical" href="/thank-you">
+  <link rel="manifest" href="/static/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tideway">
+  <meta property="og:title" content="Tideway — Thank You">
+  <meta property="og:description" content="Your files, cleaned and organized with real-time speed and safety.">
+  <meta property="og:image" content="/static/logo.svg">
+  <meta property="og:url" content="/thank-you">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tideway — Thank You">
+  <meta name="twitter:description" content="Your files, cleaned and organized with real-time speed and safety.">
+  <meta name="twitter:image" content="/static/logo.svg">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -31,6 +53,14 @@
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
     .glow-indigo {
       box-shadow: 0 0 45px -10px rgba(99, 102, 241, 0.25);
     }
@@ -178,6 +208,29 @@
 
   </main>
 
+  <!-- Cookie Consent Banner -->
+  <aside id="cookie-consent-banner" role="region" aria-label="Cookie & Storage Preferences" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 bg-slate-900/95 border border-slate-800 rounded-2xl p-5 shadow-2xl backdrop-blur-md space-y-3">
+    <div class="flex items-start space-x-3">
+      <div class="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 shrink-0 mt-0.5">
+        <i data-lucide="cookie" class="w-5 h-5" aria-hidden="true"></i>
+      </div>
+      <div class="space-y-1">
+        <h3 class="text-sm font-bold text-white tracking-tight">Cookie &amp; Storage Preferences</h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Tideway uses local storage for essential session state, category rules, and theme preferences. Read our <a href="/privacy" class="text-cyan-400 hover:underline font-medium">Privacy Policy</a>.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center justify-end space-x-2 pt-1">
+      <button type="button" onclick="setCookieConsent('essential')" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition">
+        Essential Only
+      </button>
+      <button type="button" onclick="setCookieConsent('all')" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-600/30">
+        Accept All
+      </button>
+    </div>
+  </aside>
+
   <!-- Footer -->
   <footer class="border-t border-slate-800 bg-slate-900/60 px-6 py-4 mt-auto">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
@@ -186,10 +239,14 @@
         <small class="text-xs">&copy; Tideway — Next-Gen File Organizer</small>
       </div>
       <nav aria-label="Footer Links">
-        <ul class="flex items-center space-x-4 list-none m-0 p-0">
+        <ul class="flex flex-wrap items-center space-x-4 list-none m-0 p-0">
           <li><a href="/" class="hover:text-cyan-400 transition-colors">Dashboard</a></li>
           <li class="text-slate-700" aria-hidden="true">•</li>
           <li><a href="/faq" class="hover:text-cyan-400 transition-colors">FAQ</a></li>
+          <li class="text-slate-700" aria-hidden="true">•</li>
+          <li><a href="/privacy" class="hover:text-cyan-400 transition-colors">Privacy Policy</a></li>
+          <li class="text-slate-700" aria-hidden="true">•</li>
+          <li><a href="/terms" class="hover:text-cyan-400 transition-colors">Terms of Service</a></li>
           <li class="text-slate-700" aria-hidden="true">•</li>
           <li><a href="/thank-you" class="text-cyan-400 font-medium" aria-current="page">Thank You</a></li>
           <li class="text-slate-700" aria-hidden="true">•</li>
@@ -201,6 +258,20 @@
 
   <script>
     lucide.createIcons();
+
+    function initCookieBanner() {
+      const consent = localStorage.getItem('tideway_cookie_consent');
+      const banner = document.getElementById('cookie-consent-banner');
+      if (!consent && banner) {
+        banner.classList.remove('hidden');
+      }
+    }
+    function setCookieConsent(type) {
+      localStorage.setItem('tideway_cookie_consent', type);
+      const banner = document.getElementById('cookie-consent-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+    window.addEventListener('DOMContentLoaded', initCookieBanner);
   </script>
 </body>
 </html>

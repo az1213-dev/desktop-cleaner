@@ -17,7 +17,7 @@ Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets 
 - **📁 Standard vs. Deep Scan** — Choose between top-level sorting or full recursive tree scanning (with automated removal of empty subfolders).
 - **🛡️ Collision-Safe Renaming** — Never overwrites existing files (`file_1.png`, `file_2.png`, etc.).
 - **⚙️ Dynamic Rule Editor** — Modify extension mappings directly through the Web UI or `categories.json`.
-- **📄 Built-in Pages & SEO** — Dedicated FAQ page (`/faq`), Thank You page (`/thank-you`), `robots.txt`, and customized HTML/JSON 404 error handlers.
+- **📄 Built-in Pages & SEO** — Dedicated FAQ page (`/faq`), Privacy Policy (`/privacy`), Terms of Service (`/terms`), Thank You page (`/thank-you`), `sitemap.xml`, `robots.txt`, Web App Manifest, and customized HTML/JSON 404 error handlers.
 
 ### Supported Categories
 
@@ -45,10 +45,13 @@ tideway/
 │   ├── templates/              # HTML templates
 │   │   ├── index.html          # Modern Tailwind CSS + Lucide Icons single-page UI
 │   │   ├── faq.html            # Frequently Asked Questions page
+│   │   ├── privacy.html        # Privacy Policy & data disclosure page
+│   │   ├── terms.html          # Terms of Service & MIT software license
 │   │   ├── thank_you.html      # Thank You page
 │   │   └── 404.html            # Custom styled 404 error page
 │   └── static/                 # Static assets
 │       ├── app.js              # WebSocket controller, Chart.js graphs & UI interactions
+│       ├── manifest.json       # Web App Manifest for PWA & mobile bookmarking
 │       └── logo.svg            # Application vector logo
 ├── tests/                      # Automated test suite
 │   ├── __init__.py
