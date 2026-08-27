@@ -5,11 +5,11 @@ import webbrowser
 import threading
 import time
 
-from config import DOWNLOADS_DIR, reload_categories
-from cleaner import process_directory, deep_scan_directory
-from helpers import get_available_drives, format_bytes
-import history
-from watcher import watcher_manager
+from .config import DOWNLOADS_DIR, reload_categories
+from .cleaner import process_directory, deep_scan_directory
+from .helpers import get_available_drives, format_bytes
+from . import history
+from .watcher import watcher_manager
 
 
 def show_menu():

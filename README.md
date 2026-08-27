@@ -11,11 +11,13 @@ Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets 
 - **🌐 Real-Time Web Dashboard** — A modern visual control center with live progress bars, dark mode, interactive Chart.js analytics, and move previews.
 - **⚡ Live Activity Streaming** — Real-time event streaming via WebSockets (`[MOVED]`, `[DRY-RUN]`, `[REMOVED_FOLDER]`, `[WATCHDOG]`).
 - **👀 Background Watcher Daemon** — Continuously monitors folders (like Downloads) using `watchdog` and auto-sorts files the moment they arrive.
-- **↺ 1-Click Rollback / Undo** — Audit trail recorded for every operation as its own dedicated log file (`logs/run_*.log`), mapping out exact before & after file paths for instant reversal.
+- **↺ 1-Click Rollback / Undo** — Audit trail recorded for every operation as its own dedicated log file (`tideway/logs/run_*.log`), mapping out exact before & after file paths for instant reversal.
+- **📊 CSV Export** — Export complete run histories and transaction logs directly to CSV from the dashboard.
 - **🔍 Dry Run & Diff Preview** — Inspect file lists, categories, and paths in a searchable table before touching any file.
 - **📁 Standard vs. Deep Scan** — Choose between top-level sorting or full recursive tree scanning (with automated removal of empty subfolders).
 - **🛡️ Collision-Safe Renaming** — Never overwrites existing files (`file_1.png`, `file_2.png`, etc.).
 - **⚙️ Dynamic Rule Editor** — Modify extension mappings directly through the Web UI or `categories.json`.
+- **📄 Built-in Pages & SEO** — Dedicated FAQ page (`/faq`), Thank You page (`/thank-you`), `robots.txt`, and customized HTML/JSON 404 error handlers.
 
 ### Supported Categories
 
@@ -27,24 +29,35 @@ Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets 
 
 ```
 tideway/
-├── cleaner.py          # Core scanning, sorting, and event-driven moving engine
-├── config.py           # Paths, category extension mappings, dynamic reloader
-├── helpers.py          # Drive detection, unique naming, byte formatting, path helpers
-├── history.py          # Log-based transaction parser & 1-click rollback engine
-├── logger.py           # Timestamped run log files saved to logs/
-├── main.py             # CLI interactive menu & command-line argument dispatcher
-├── watcher.py          # Background watchdog daemon for live folder monitoring
-├── requirements.txt    # Python dependencies
-├── categories.json     # Extension-to-category mapping definitions
-├── dashboard/
-│   ├── server.py       # FastAPI backend with REST endpoints & WebSocket hub
-│   ├── templates/
-│   │   └── index.html  # Modern Tailwind CSS + Lucide Icons single-page UI
-│   └── static/
-│       └── app.js      # WebSocket controller, Chart.js graphs & UI interactions
-└── tests/
-    ├── test_organizer.py # Unit tests for cleaner, undo, and helpers
-    └── test_api.py       # API and endpoint test suite
+├── tideway/                    # Core Tideway Python package
+│   ├── __init__.py             # Package marker and module overview
+│   ├── cleaner.py              # Core scanning, sorting, and event-driven moving engine
+│   ├── config.py               # Paths, category extension mappings, dynamic reloader, .env
+│   ├── helpers.py              # Drive detection, unique naming, byte formatting, path helpers
+│   ├── history.py              # Log-based transaction parser & 1-click rollback engine
+│   ├── logger.py               # Timestamped run log files saved to logs/
+│   ├── main.py                 # CLI interactive menu & command-line argument dispatcher
+│   ├── watcher.py              # Background watchdog daemon for live folder monitoring
+│   ├── categories.json         # Extension-to-category mapping definitions
+│   └── logs/                   # Audit trail logs (run_*.log)
+├── dashboard/                  # Web dashboard application
+│   ├── server.py               # FastAPI backend with REST endpoints & WebSocket hub
+│   ├── templates/              # HTML templates
+│   │   ├── index.html          # Modern Tailwind CSS + Lucide Icons single-page UI
+│   │   ├── faq.html            # Frequently Asked Questions page
+│   │   ├── thank_you.html      # Thank You page
+│   │   └── 404.html            # Custom styled 404 error page
+│   └── static/                 # Static assets
+│       ├── app.js              # WebSocket controller, Chart.js graphs & UI interactions
+│       └── logo.svg            # Application vector logo
+├── tests/                      # Automated test suite
+│   ├── __init__.py
+│   ├── test_organizer.py       # Unit tests for cleaner, undo, and helpers
+│   └── test_api.py             # API, WebSockets, static routes, and endpoint test suite
+├── .env.example                # Example environment configuration
+├── pytest.ini                  # Pytest configuration
+├── requirements.txt            # Runtime dependencies
+└── requirements-dev.txt        # Development and testing dependencies
 ```
 
 ---
@@ -53,71 +66,100 @@ tideway/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/az1213-dev/file-organizer.git
-   cd file-organizer
+   git clone https://github.com/az1213-dev/tideway.git
+   cd tideway
    ```
 
 2. **Set up a virtual environment and install dependencies:**
    ```bash
    python -m venv .venv
-   # Windows:
-   .\.venv\Scripts\pip install -r requirements.txt
+
+   # Windows (PowerShell):
+   .\.venv\Scripts\Activate.ps1
+   pip install -r requirements.txt -r requirements-dev.txt
+
    # macOS/Linux:
-   source .venv/bin/activate && pip install -r requirements.txt
+   source .venv/bin/activate
+   pip install -r requirements.txt -r requirements-dev.txt
+   ```
+
+3. **(Optional) Configure environment variables:**
+   ```bash
+   cp .env.example .env
    ```
 
 ---
 
 ## 🖥️ Running the Real-Time Web Dashboard
 
-Launch the dashboard with a single command:
+Launch the dashboard with:
 
 ```bash
-python main.py --dashboard
+python -m tideway.main --dashboard
 ```
+
 *Or specify a custom port:*
 ```bash
-python main.py --dashboard --port 8080
+python -m tideway.main --dashboard --port 8080
 ```
 
-Your default browser will open to `http://localhost:8000`.
+Your default browser will open automatically to `http://localhost:8000`.
 
-### Dashboard Tabs:
+### Dashboard Tabs & Pages:
 - **Dashboard & Control:** Select quick locations (Downloads, Desktop, Drives), choose Standard vs. Deep Scan, and trigger Dry Runs or Live Organization.
 - **Diff & Preview:** Search and filter files by category before executing changes.
-- **Run History & Undo:** View past runs and rollback any operation.
+- **Run History & Undo:** View past runs, export transaction logs as CSV, and rollback any operation.
 - **Auto-Organizer Daemon:** Add and manage background folder watchers.
 - **Categories & Rules:** Visual editor to add, remove, and modify category mappings.
+- **Informational Pages:** Built-in `/faq`, `/thank-you`, and `/robots.txt`.
 
 ---
 
 ## ⌨️ CLI Usage
 
-You can also run the tool directly in your terminal:
+You can also run Tideway directly in your terminal:
 
 ```bash
-python main.py
+python -m tideway.main
 ```
 
-### Command-Line Flags:
+### Command-Line Options:
 ```bash
 # Launch Web Dashboard
-python main.py --dashboard
+python -m tideway.main --dashboard
 
 # Run a Dry Run preview on Downloads (standard top-level)
-python main.py --target "C:\Users\Username\Downloads" --dry-run
+python -m tideway.main --target "C:\Users\Username\Downloads" --dry-run
 
-# Run a Deep Scan Clean on an entire drive
-python main.py --target "D:\" --clean --deep
+# Run a Deep Scan Clean on an entire directory or drive
+python -m tideway.main --target "D:\" --clean --deep
 
 # Start background monitoring on Downloads
-python main.py --watch "C:\Users\Username\Downloads"
+python -m tideway.main --watch "C:\Users\Username\Downloads"
+
+# Start background monitoring with recursive deep scanning
+python -m tideway.main --watch "C:\Users\Username\Downloads" --deep
 
 # Undo the most recent run
-python main.py --undo-last
+python -m tideway.main --undo-last
 
 # Undo a specific run ID
-python main.py --undo "2026-08-24_20-35-12_abc123"
+python -m tideway.main --undo "run_2026-08-26_20-45-25_3555e1"
+```
+
+---
+
+## 🧪 Running Tests
+
+Run the test suite with `pytest`:
+
+```bash
+pytest
+```
+
+To run with verbose output:
+```bash
+pytest -v
 ```
 
 ---

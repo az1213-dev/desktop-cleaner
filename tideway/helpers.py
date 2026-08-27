@@ -3,7 +3,7 @@ import platform
 import string
 from os.path import splitext, exists, join
 
-import config
+from . import config
 
 
 def get_available_drives():

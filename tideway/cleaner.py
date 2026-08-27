@@ -3,11 +3,11 @@ from os import scandir
 from os.path import splitext, join
 from shutil import move
 
-import config
-from helpers import ensure_dir, make_unique, get_dest, get_category, format_bytes
-from logger import start_log, write_log
-import history
-
+from . import config
+from . import helpers
+from .helpers import ensure_dir, make_unique, get_dest, get_category, format_bytes
+from . import history
+from .logger import start_log, write_log
 
 def is_category_folder(name):
     """True if a folder name matches one of our own category folders

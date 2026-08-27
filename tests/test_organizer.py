@@ -8,10 +8,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-import config
-import helpers
-import cleaner
-import history
+from tideway import config
+from tideway import helpers
+from tideway import cleaner
+from tideway import history
 
 
 @pytest.fixture

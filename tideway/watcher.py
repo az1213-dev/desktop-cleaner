@@ -7,11 +7,11 @@ from shutil import move
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-import config
-from helpers import ensure_dir, make_unique, get_dest, get_category, format_bytes
-from cleaner import is_category_folder
-import history
-from logger import start_log, write_log
+from . import config
+from .helpers import ensure_dir, make_unique, get_dest, get_category, format_bytes
+from .cleaner import is_category_folder
+from . import history
+from .logger import start_log, write_log
 
 IGNORE_EXTENSIONS = {".tmp", ".crdownload", ".part", ".download", ".partial", ".swp"}
 IGNORE_PREFIXES = {"~$", ".", "#"}

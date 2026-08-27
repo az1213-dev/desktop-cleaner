@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 from shutil import move
 
-import config
-import helpers
-from helpers import ensure_dir, make_unique
-from logger import LOG_DIR, start_log, write_log
+from . import config
+from . import helpers
+from .helpers import ensure_dir, make_unique
+from .logger import LOG_DIR, start_log, write_log
 
 HISTORY_DIR = LOG_DIR
 
