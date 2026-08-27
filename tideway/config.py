@@ -29,9 +29,9 @@ CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 CATEGORIES_FILE = os.path.join(CONFIG_DIR, "categories.json")
 
 # Server & Security Settings
-APP_ENV = os.getenv("APP_ENV", "production")
-APP_HOST = os.getenv("APP_HOST", "127.0.0.1")
-APP_PORT = int(os.getenv("APP_PORT", "8000"))
+APP_ENV = os.getenv("APP_ENV", "production").lower()
+APP_HOST = os.getenv("HOST", os.getenv("APP_HOST", "127.0.0.1"))
+APP_PORT = int(os.getenv("PORT", os.getenv("APP_PORT", "8000")))
 SECRET_KEY = os.getenv("SECRET_KEY", "default-insecure-secret-key-please-change")
 ENABLE_CORS = os.getenv("ENABLE_CORS", "true").lower() in ("true", "1", "yes")
 ALLOWED_ORIGINS = [
@@ -39,6 +39,28 @@ ALLOWED_ORIGINS = [
 ]
 WATCHDOG_DEBOUNCE_SECONDS = float(os.getenv("WATCHDOG_DEBOUNCE_SECONDS", "2.0"))
 AUTO_OPEN_BROWSER = os.getenv("AUTO_OPEN_BROWSER", "true").lower() in ("true", "1", "yes")
+
+# Logging & Audit Configuration
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+MAX_LOG_FILES = int(os.getenv("MAX_LOG_FILES", "50"))
+
+INSECURE_SECRET_KEYS = {
+    "default-insecure-secret-key-please-change",
+    "change_this_to_a_secure_random_64_character_hex_string",
+    "secret",
+    "",
+}
+
+
+def validate_security_settings():
+    """Ensure insecure defaults are not used in production deployments."""
+    if APP_ENV == "production":
+        if not SECRET_KEY or SECRET_KEY in INSECURE_SECRET_KEYS:
+            raise RuntimeError(
+                "CRITICAL SECURITY ERROR: Cannot start in production mode with default or empty SECRET_KEY. "
+                "Generate a secure 64-character secret key with: python -c \"import secrets; print(secrets.token_hex(32))\" "
+                "and set it in your environment or .env file."
+            )
 
 
 def load_categories():
