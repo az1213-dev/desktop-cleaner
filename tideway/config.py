@@ -4,7 +4,14 @@ import json
 # Load environment variables from .env if python-dotenv is available
 try:
     from dotenv import load_dotenv
-    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+    root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    pkg_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if os.path.exists(root_env):
+        load_dotenv(root_env)
+    elif os.path.exists(pkg_env):
+        load_dotenv(pkg_env)
+    else:
+        load_dotenv()
 except ImportError:
     pass
 
