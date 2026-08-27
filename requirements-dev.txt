@@ -6,8 +6,8 @@
 -r requirements.txt
 
 # --- Testing ---
-pytest==9.1.1
-anyio==4.14.2
+pytest>=8.4.0,<10.0.0
+anyio>=4.4.0
 
 # --- Security Auditing ---
 pip-audit==2.10.1
