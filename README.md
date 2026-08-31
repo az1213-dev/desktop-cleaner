@@ -1,23 +1,28 @@
-# 🌊 Tideway
+# ClutterCtrl
 
-A tidal force for your filesystem — sweep files into organized categories with live previews, auto-watchers, and instant rollback.
+<p align="left">
+  <a href="https://www.python.org"><img src="https://img.shields.io/badge/Python-3.9+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License: MIT" /></a>
+  <a href="https://github.com/az1213-dev/clutterctrl/actions"><img src="https://img.shields.io/github/actions/workflow/status/az1213-dev/clutterctrl/ci.yml?style=flat-square&label=CI" alt="CI Status" /></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/Dependencies-0%20Mandatory-brightgreen.svg?style=flat-square" alt="Zero Mandatory Dependencies" /></a>
+</p>
 
-Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets + Tailwind CSS), **Background Auto-Organizer Daemon**, **One-Click Undo / Rollback**, and a rich **CLI interface**.
+A fast, lightweight terminal file organizer. It cleans up cluttered folders (like your Downloads or Desktop), sorts files into organized directories by type, lets you preview changes before touching anything, and keeps a dedicated log of every run so you can undo changes with a single command.
+
+Written in pure Python with standard library modules, so you can run it immediately without installing any third-party packages.
 
 ---
 
-## 🚀 Key Features
+## <img src="https://api.iconify.design/lucide:sparkles.svg?color=%2306b6d4" width="20" height="20" align="center" /> Features
 
-- **🌐 Real-Time Web Dashboard** — A modern visual control center with live progress bars, dark mode, interactive Chart.js analytics, and move previews.
-- **⚡ Live Activity Streaming** — Real-time event streaming via WebSockets (`[MOVED]`, `[DRY-RUN]`, `[REMOVED_FOLDER]`, `[WATCHDOG]`).
-- **👀 Background Watcher Daemon** — Continuously monitors folders (like Downloads) using `watchdog` and auto-sorts files the moment they arrive.
-- **↺ 1-Click Rollback / Undo** — Audit trail recorded for every operation as its own dedicated log file (`tideway/logs/run_*.log`), mapping out exact before & after file paths for instant reversal.
-- **📊 CSV Export** — Export complete run histories and transaction logs directly to CSV from the dashboard.
-- **🔍 Dry Run & Diff Preview** — Inspect file lists, categories, and paths in a searchable table before touching any file.
-- **📁 Standard vs. Deep Scan** — Choose between top-level sorting or full recursive tree scanning (with automated removal of empty subfolders).
-- **🛡️ Collision-Safe Renaming** — Never overwrites existing files (`file_1.png`, `file_2.png`, etc.).
-- **⚙️ Dynamic Rule Editor** — Modify extension mappings directly through the Web UI or `categories.json`.
-- **📄 Built-in Pages & SEO** — Dedicated FAQ page (`/faq`), Privacy Policy (`/privacy`), Terms of Service (`/terms`), Thank You page (`/thank-you`), `sitemap.xml`, `robots.txt`, Web App Manifest, and customized HTML/JSON 404 error handlers.
+- **Zero-Dependency CLI**: Runs directly in Windows Command Prompt, PowerShell, macOS Terminal, or Linux using standard Python.
+- **Dedicated Run Logs**: Every organization run creates its own log file (`run_YYYY-MM-DD_HH-MM-SS_<id>.log`) recording the exact before and after paths for every file moved.
+- **1-Click Undo**: Revert any previous run instantly via `clutterctrl undo <Run ID>` or through the interactive menu.
+- **Dry Run Previews**: Check file lists, categories, destination paths, and sizes in a clean table before anything gets moved.
+- **Background Folder Watcher**: Optionally watch folders like Downloads to auto-sort new files as they arrive, with built-in debounce so it never touches partial downloads.
+- **Standard and Deep Scans**: Choose between organizing top-level files or scanning entire folder trees recursively while cleaning up empty folders.
+- **Safe Renaming**: Never overwrites existing files. If a file with the same name exists, it automatically adds a counter (like `photo_1.png`).
+- **Stats & History**: View your past runs and see a visual bar chart of how your storage is organized across categories.
 
 ### Supported Categories
 
@@ -25,148 +30,115 @@ Built in Python with a modern **Real-Time Web Dashboard** (FastAPI + WebSockets 
 
 ---
 
-## 📂 Project Structure
+## <img src="https://api.iconify.design/lucide:terminal.svg?color=%2306b6d4" width="20" height="20" align="center" /> Quickstart
 
+### 1. Run Directly (No Setup Needed)
+You can clone the repo and run ClutterCtrl right away:
+
+```bash
+git clone https://github.com/az1213-dev/clutterctrl.git
+cd clutterctrl
+
+# Run in Windows CMD or PowerShell
+python clutterctrl/main.py
 ```
-tideway/
-├── tideway/                    # Core Tideway Python package
-│   ├── __init__.py             # Package marker and module overview
-│   ├── cleaner.py              # Core scanning, sorting, and event-driven moving engine
-│   ├── config.py               # Paths, category extension mappings, dynamic reloader, .env
-│   ├── helpers.py              # Drive detection, unique naming, byte formatting, path helpers
-│   ├── history.py              # Log-based transaction parser & 1-click rollback engine
-│   ├── logger.py               # Timestamped run log files saved to logs/
-│   ├── main.py                 # CLI interactive menu & command-line argument dispatcher
-│   ├── watcher.py              # Background watchdog daemon for live folder monitoring
-│   ├── categories.json         # Extension-to-category mapping definitions
-│   └── logs/                   # Audit trail logs (run_*.log)
-├── dashboard/                  # Web dashboard application
-│   ├── server.py               # FastAPI backend with REST endpoints & WebSocket hub
-│   ├── templates/              # HTML templates
-│   │   ├── index.html          # Modern Tailwind CSS + Lucide Icons single-page UI
-│   │   ├── faq.html            # Frequently Asked Questions page
-│   │   ├── privacy.html        # Privacy Policy & data disclosure page
-│   │   ├── terms.html          # Terms of Service & MIT software license
-│   │   ├── thank_you.html      # Thank You page
-│   │   └── 404.html            # Custom styled 404 error page
-│   └── static/                 # Static assets
-│       ├── app.js              # WebSocket controller, Chart.js graphs & UI interactions
-│       ├── manifest.json       # Web App Manifest for PWA & mobile bookmarking
-│       └── logo.svg            # Application vector logo
-├── tests/                      # Automated test suite
-│   ├── __init__.py
-│   ├── test_organizer.py       # Unit tests for cleaner, undo, and helpers
-│   └── test_api.py             # API, WebSockets, static routes, and endpoint test suite
-├── .env.example                # Example environment configuration
-├── pytest.ini                  # Pytest configuration
-├── requirements.txt            # Runtime dependencies
-└── requirements-dev.txt        # Development and testing dependencies
+
+### 2. Install as a Global Command
+If you want to use the `clutterctrl` command anywhere in your terminal, install it in editable mode:
+
+```bash
+pip install -e .
+
+# Or with pipx
+pipx install .
 ```
+
+Now you can run `clutterctrl` from any directory.
 
 ---
 
-## 🛠️ Installation & Setup
+## <img src="https://api.iconify.design/lucide:command.svg?color=%2306b6d4" width="20" height="20" align="center" /> CLI Commands
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/az1213-dev/tideway.git
-   cd tideway
-   ```
-
-2. **Set up a virtual environment and install dependencies:**
-   ```bash
-   python -m venv .venv
-
-   # Windows (PowerShell):
-   .\.venv\Scripts\Activate.ps1
-   pip install -r requirements.txt -r requirements-dev.txt
-
-   # macOS/Linux:
-   source .venv/bin/activate
-   pip install -r requirements.txt -r requirements-dev.txt
-   ```
-
-3. **(Optional) Configure environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-
----
-
-## 🖥️ Running the Real-Time Web Dashboard
-
-Launch the dashboard with:
+You can run ClutterCtrl with subcommands or launch the interactive menu by running `clutterctrl` with no arguments:
 
 ```bash
-python -m tideway.main --dashboard
-```
+# Open the interactive terminal menu
+clutterctrl
 
-*Or specify a custom port:*
-```bash
-python -m tideway.main --dashboard --port 8080
-```
+# Preview what will be moved in Downloads without changing anything
+clutterctrl scan "C:\Users\Username\Downloads"
 
-Your default browser will open automatically to `http://localhost:8000`.
+# Preview a folder recursively (Deep Scan)
+clutterctrl scan "D:\Projects" --deep
 
-### Dashboard Tabs & Pages:
-- **Dashboard & Control:** Select quick locations (Downloads, Desktop, Drives), choose Standard vs. Deep Scan, and trigger Dry Runs or Live Organization.
-- **Diff & Preview:** Search and filter files by category before executing changes.
-- **Run History & Undo:** View past runs, export transaction logs as CSV, and rollback any operation.
-- **Auto-Organizer Daemon:** Add and manage background folder watchers.
-- **Categories & Rules:** Visual editor to add, remove, and modify category mappings.
-- **Informational Pages:** Built-in `/faq`, `/thank-you`, and `/robots.txt`.
+# Clean and organize Downloads right away
+clutterctrl clean "C:\Users\Username\Downloads"
 
----
+# Clean an entire directory tree recursively
+clutterctrl clean "D:\MessyFolder" --deep
 
-## ⌨️ CLI Usage
+# Watch a folder in the background and sort files as they arrive
+clutterctrl watch "C:\Users\Username\Downloads"
 
-You can also run Tideway directly in your terminal:
-
-```bash
-python -m tideway.main
-```
-
-### Command-Line Options:
-```bash
-# Launch Web Dashboard
-python -m tideway.main --dashboard
-
-# Run a Dry Run preview on Downloads (standard top-level)
-python -m tideway.main --target "C:\Users\Username\Downloads" --dry-run
-
-# Run a Deep Scan Clean on an entire directory or drive
-python -m tideway.main --target "D:\" --clean --deep
-
-# Start background monitoring on Downloads
-python -m tideway.main --watch "C:\Users\Username\Downloads"
-
-# Start background monitoring with recursive deep scanning
-python -m tideway.main --watch "C:\Users\Username\Downloads" --deep
+# View past organization runs
+clutterctrl history
 
 # Undo the most recent run
-python -m tideway.main --undo-last
+clutterctrl undo
 
-# Undo a specific run ID
-python -m tideway.main --undo "run_2026-08-26_20-45-25_3555e1"
+# Undo a specific run by ID
+clutterctrl undo run_2026-08-31_13-52-17_aad725
+
+# View storage statistics and category distribution
+clutterctrl stats
+
+# View extension mapping rules
+clutterctrl rules
 ```
 
 ---
 
-## 🧪 Running Tests
+## <img src="https://api.iconify.design/lucide:file-text.svg?color=%2306b6d4" width="20" height="20" align="center" /> Run Logs and Undo
 
-Run the test suite with `pytest`:
+ClutterCtrl creates a dedicated log file for every run inside the repository:
+- **Log Path**: `clutterctrl/logs/run_*.log`
 
-```bash
-pytest
+### What a Run Log Looks Like
+```text
+Run ID: run_2026-08-31_13-52-17_aad725
+Run started: 2026-08-31T13:52:17.123456
+Target: C:\Users\Username\Downloads
+Deep Scan: False
+Mode: clean
+Status: ACTIVE
+
+--- OPERATIONS ---
+MOVED: C:\Users\Username\Downloads\photo.png -> C:\Users\Username\Downloads\Images\photo.png | Category: Images | Size: 1048576
+MOVED: C:\Users\Username\Downloads\report.pdf -> C:\Users\Username\Downloads\Documents\report.pdf | Category: Documents | Size: 524288
+
+--- SUMMARY ---
+Total files moved: 2
+Images: 1
+Documents: 1
+Total bytes: 1572864
+Run completed: 2026-08-31T13:52:17.456789
+Status: COMPLETED
 ```
 
-To run with verbose output:
+When you undo a run, ClutterCtrl reads the operations in reverse, puts all files back in their original folders, and marks the log as `UNDONE`.
+
+---
+
+## <img src="https://api.iconify.design/lucide:flask-conical.svg?color=%2306b6d4" width="20" height="20" align="center" /> Running Tests
+
+You can run the test suite with `pytest`:
+
 ```bash
 pytest -v
 ```
 
 ---
 
-## 📄 License
+## <img src="https://api.iconify.design/lucide:scale.svg?color=%2306b6d4" width="20" height="20" align="center" /> License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is open source and available under the MIT License. See [LICENSE](LICENSE) for details.

@@ -8,10 +8,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from tideway import config
-from tideway import helpers
-from tideway import cleaner
-from tideway import history
+from clutterctrl import config
+from clutterctrl import helpers
+from clutterctrl import cleaner
+from clutterctrl import history
 
 
 @pytest.fixture
@@ -66,15 +66,32 @@ def test_dry_run_and_clean_with_undo(temp_dir):
     assert not os.path.exists(img_file)
     assert not os.path.exists(doc_file)
 
-    # 3. Undo / Rollback Test
+    # 3. Verify Unique Log File Exists
     run_id = clean_res["run_id"]
     assert run_id is not None
+    log_path = history.get_log_path(run_id)
+    assert os.path.isfile(log_path)
+    assert log_path.endswith(".log")
+
+    with open(log_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    assert "MOVED:" in content
+    assert "sample.png" in content
+    assert "report.pdf" in content
+    assert "Run ID:" in content
+
+    # 4. Undo / Rollback Test
     undo_res = history.undo_run(run_id)
     assert undo_res["success"] is True
     assert undo_res["restored"] == 2
     # Verify files restored back to root temp_dir
     assert os.path.exists(img_file)
     assert os.path.exists(doc_file)
+
+    # Verify log file is marked UNDONE
+    with open(log_path, "r", encoding="utf-8") as f:
+        undo_content = f.read()
+    assert "UNDONE:" in undo_content or "STATUS: UNDONE" in undo_content
 
 
 def test_deep_scan_and_cleanup_empty_dirs(temp_dir):
@@ -92,7 +109,7 @@ def test_deep_scan_and_cleanup_empty_dirs(temp_dir):
     assert not os.path.exists(nested_sub)
 
 
-def test_log_file_history_and_no_json(temp_dir):
+def test_unique_log_file_history_queries(temp_dir):
     test_file = os.path.join(temp_dir, "sample.png")
     with open(test_file, "w") as f:
         f.write("image")
@@ -100,59 +117,15 @@ def test_log_file_history_and_no_json(temp_dir):
     # Run clean
     res = cleaner.process_directory(temp_dir, dry_run=False)
     run_id = res["run_id"]
-    log_path = res["log_path"]
 
-    # Verify dedicated log file exists
-    assert os.path.exists(log_path)
-    assert log_path.endswith(".log")
-    with open(log_path, "r", encoding="utf-8") as f:
-        log_content = f.read()
-    assert "MOVED:" in log_content
-    assert "sample.png" in log_content
-
-    # Verify history.json does NOT exist
-    json_path = os.path.join(history.LOG_DIR, "history.json")
-    assert not os.path.exists(json_path)
-
-    # Verify history.get_all_history() reads from .log files
+    # Verify history.get_all_history() reads from the unique log file
     all_runs = history.get_all_history()
     matching = [r for r in all_runs if r["run_id"] == run_id]
     assert len(matching) == 1
     assert matching[0]["total_files"] == 1
 
-    # Verify undo updates log file
+    # Verify undo updates log status
     undo_res = history.undo_run(run_id)
     assert undo_res["success"] is True
-    with open(log_path, "r", encoding="utf-8") as f:
-        updated_log = f.read()
-    assert "UNDONE:" in updated_log
-
-
-def test_validate_security_settings():
-    # In development mode, insecure key should pass
-    config.APP_ENV = "development"
-    config.SECRET_KEY = "default-insecure-secret-key-please-change"
-    config.validate_security_settings()
-
-    # In production mode, insecure or empty key should raise RuntimeError
-    config.APP_ENV = "production"
-    config.SECRET_KEY = "default-insecure-secret-key-please-change"
-    with pytest.raises(RuntimeError) as exc_info:
-        config.validate_security_settings()
-    assert "CRITICAL SECURITY ERROR" in str(exc_info.value)
-
-    # In production mode with a proper 64-char key, it should pass
-    config.SECRET_KEY = "1fb5864fbf871dd4a90650f4101ca33362999e0137c054bcacc864ccdf4ee9f1"
-    config.validate_security_settings()
-
-    # Reset back to development
-    config.APP_ENV = "development"
-
-
-def test_prune_old_logs(temp_dir):
-    from tideway.logger import prune_old_logs, LOG_DIR
-    # Test prune_old_logs does not crash with custom limit
-    prune_old_logs(max_files=100)
-
-
-
+    undone_run = history.get_transaction(run_id)
+    assert undone_run["undone"] is True

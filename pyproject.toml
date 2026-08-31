@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clutterctrl"
+version = "2.0.0"
+authors = [
+    { name = "az1213-dev" }
+]
+description = "A lightweight terminal file organizer with dry-run previews, per-run audit logs, and 1-click rollback."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["clutterctrl", "file-organizer", "filesystem", "cli", "terminal", "automation", "cleaner", "rollback", "productivity"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+    "Topic :: System :: Filesystems",
+]
+
+# Zero mandatory dependencies for core CLI & per-run logging
+dependencies = []
+
+[project.optional-dependencies]
+watcher = [
+    "watchdog>=4.0.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "build>=1.0.0",
+    "twine>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/az1213-dev/clutterctrl"
+Documentation = "https://github.com/az1213-dev/clutterctrl#readme"
+Repository = "https://github.com/az1213-dev/clutterctrl.git"
+Issues = "https://github.com/az1213-dev/clutterctrl/issues"
+
+[project.scripts]
+clutterctrl = "clutterctrl.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["clutterctrl*"]
+
+[tool.setuptools.package-data]
+clutterctrl = ["categories.json"]

@@ -4,8 +4,15 @@ import threading
 from os.path import splitext, join, isfile, dirname, basename
 from shutil import move
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+    HAS_WATCHDOG = True
+except ImportError:
+    HAS_WATCHDOG = False
+    class FileSystemEventHandler:
+        pass
+    Observer = None
 
 from . import config
 from .helpers import ensure_dir, make_unique, get_dest, get_category, format_bytes
@@ -119,8 +126,8 @@ class OrganizeEventHandler(FileSystemEventHandler):
                 return
 
             move(filepath, final_dest_path)
-            history.record_move(run_id, filepath, final_dest_path)
-            history.finish_transaction(run_id, {category: 1})
+            history.record_move(run_id, filepath, final_dest_path, category=category, file_size=file_size)
+            history.finish_transaction(run_id, {category: 1}, total_bytes=file_size)
 
             file_info = {
                 "name": filename,
@@ -155,6 +162,9 @@ class WatcherManager:
         self._lock = threading.Lock()
 
     def start(self, watch_dir, deep=False, event_callback=None):
+        if not HAS_WATCHDOG:
+            return False, "Folder watching requires the 'watchdog' package. Install with: pip install watchdog (or pip install -e .[watcher])"
+
         watch_path = os.path.abspath(os.path.normpath(watch_dir.strip()))
         with self._lock:
             # Check normalized match against active observers

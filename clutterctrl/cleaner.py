@@ -139,10 +139,8 @@ def process_directory(source_dir, dry_run=False, quiet=False, event_callback=Non
                     file_info["status"] = "moved"
                     files_list.append(file_info)
 
-                    if log_path:
-                        write_log(log_path, "MOVED: " + entry.path + " -> " + final_dest_path)
                     if run_id:
-                        history.record_move(run_id, entry.path, final_dest_path)
+                        history.record_move(run_id, entry.path, final_dest_path, category=category, file_size=file_size)
 
                     if event_callback:
                         event_callback({
@@ -196,7 +194,7 @@ def process_directory(source_dir, dry_run=False, quiet=False, event_callback=Non
     total_bytes = sum(sizes.values())
 
     if run_id:
-        history.finish_transaction(run_id, counts)
+        history.finish_transaction(run_id, counts, total_bytes=total_bytes)
 
     if not quiet and event_callback is None:
         print("")
@@ -286,8 +284,6 @@ def cleanup_empty_dirs(source_dir, log_path=None, run_id=None, event_callback=No
             if not os.listdir(dirpath):
                 os.rmdir(dirpath)
                 removed.append(dirpath)
-                if log_path:
-                    write_log(log_path, "REMOVED EMPTY FOLDER: " + dirpath)
                 if run_id:
                     history.record_removed_dir(run_id, dirpath)
                 if event_callback:
@@ -458,10 +454,8 @@ def deep_scan_directory(source_dir, dry_run=False, quiet=False, event_callback=N
                     file_info["status"] = "moved"
                     files_list.append(file_info)
 
-                    if log_path:
-                        write_log(log_path, "MOVED: " + src_path + " -> " + final_dest_path)
                     if run_id:
-                        history.record_move(run_id, src_path, final_dest_path)
+                        history.record_move(run_id, src_path, final_dest_path, category=category, file_size=file_size)
 
                     if event_callback:
                         event_callback({
@@ -520,7 +514,7 @@ def deep_scan_directory(source_dir, dry_run=False, quiet=False, event_callback=N
     total_bytes = sum(sizes.values())
 
     if run_id:
-        history.finish_transaction(run_id, counts)
+        history.finish_transaction(run_id, counts, total_bytes=total_bytes)
 
     if not quiet and event_callback is None:
         print("")

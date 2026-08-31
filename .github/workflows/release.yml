@@ -1,0 +1,125 @@
+name: Release & Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+permissions:
+  contents: write    # Required to create GitHub Release & upload asset binaries
+  id-token: write    # Required for PyPI Trusted Publishing (OIDC)
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Run Automated Test Suite
+  # ---------------------------------------------------------------------------
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev,watcher]
+
+      - name: Run Tests
+        run: |
+          pytest -v
+
+  # ---------------------------------------------------------------------------
+  # 2. Build Distribution Artifacts (sdist and wheel)
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build Distribution Packages
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Build & Validation Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build Source Distribution & Wheel
+        run: |
+          python -m build
+
+      - name: Validate Package Metadata
+        run: |
+          twine check --strict dist/*
+
+      - name: Upload Artifacts to Workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # 3. Create GitHub Release with Attached Assets
+  # ---------------------------------------------------------------------------
+  github-release:
+    name: Create GitHub Release
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # 4. Publish to PyPI (via Trusted Publishing OIDC)
+  # ---------------------------------------------------------------------------
+  pypi-publish:
+    name: Publish Distribution to PyPI
+    needs: [ build, github-release ]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'release' && github.event.action == 'published')
+    environment: pypi
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish Package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+

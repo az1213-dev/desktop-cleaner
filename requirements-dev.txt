@@ -1,14 +1,11 @@
 # ==============================================================================
-# File Organizer - Development & Testing Dependencies
+# ClutterCtrl - Development & Testing Dependencies
 # ==============================================================================
 # Install with: pip install -r requirements-dev.txt
 
 -r requirements.txt
 
-# --- Testing ---
-pytest>=8.4.0,<10.0.0
-anyio>=4.4.0
-
-# --- Security Auditing ---
-pip-audit==2.10.1
-
+# --- Testing & Packaging ---
+pytest>=8.0.0
+build>=1.0.0
+twine>=5.0.0
