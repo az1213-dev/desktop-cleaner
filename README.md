@@ -3,7 +3,7 @@
 <p align="left">
   <a href="https://www.python.org"><img src="https://img.shields.io/badge/Python-3.9+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License: MIT" /></a>
-  <a href="https://github.com/az1213-dev/clutterctrl/actions"><img src="https://img.shields.io/github/actions/workflow/status/az1213-dev/clutterctrl/ci.yml?style=flat-square&label=CI" alt="CI Status" /></a>
+  <a href="https://github.com/az1213-dev/clutter-ctrl/actions"><img src="https://img.shields.io/github/actions/workflow/status/az1213-dev/clutter-ctrl/ci.yml?style=flat-square&label=CI" alt="CI Status" /></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/Dependencies-0%20Mandatory-brightgreen.svg?style=flat-square" alt="Zero Mandatory Dependencies" /></a>
 </p>
 
@@ -36,8 +36,8 @@ Written in pure Python with standard library modules, so you can run it immediat
 You can clone the repo and run ClutterCtrl right away:
 
 ```bash
-git clone https://github.com/az1213-dev/clutterctrl.git
-cd clutterctrl
+git clone https://github.com/az1213-dev/clutter-ctrl.git
+cd clutter-ctrl
 
 # Run in Windows CMD or PowerShell
 python clutterctrl/main.py
